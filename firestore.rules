@@ -1,0 +1,28 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function role() { return request.auth != null ? request.auth.token.role : null; }
+
+    match /restaurants/{rid} {
+      allow read: if true;
+      allow write: if role() == 'admin';
+
+      match /categories/{cid} {
+        allow read: if true;
+        allow write: if role() == 'admin';
+      }
+
+      match /items/{iid} {
+        allow read: if true;
+
+        // المحرر يستطيع تغيير السعر فقط
+        allow update: if request.auth != null && (
+          role() == 'admin' ||
+          (role() == 'editor' && request.resource.data.diff(resource.data).changedKeys().hasOnly(['price']))
+        );
+
+        allow create, delete: if role() == 'admin';
+      }
+    }
+  }
+}
