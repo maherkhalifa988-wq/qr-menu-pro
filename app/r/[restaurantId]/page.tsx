@@ -31,7 +31,7 @@ export default function RestaurantPage({
   }, [restaurantId])
 
   const catLabel = (c: any) =>
-    lang === 'ar' ? (c?.nameAr  c?.name) : (c?.nameEn  c?.name)
+    lang === 'ar' ? (c?.nameAr||c?.name) : (c?.nameEn||c?.name)
 
   const withLabels = items.map((i) => ({
     ...i,
