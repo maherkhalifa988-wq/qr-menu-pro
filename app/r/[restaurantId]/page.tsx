@@ -40,11 +40,12 @@ export default function MenuView() {
     [active, items]
   )
 
-  const catLabel = (c: any) => (lang === 'ar' ? (c.nameAr  c.name) : (c.nameEn  c.name))
+  const catLabel = (c: any) =>
+  lang === 'ar' ? (c.nameAr||c.name) : (c.nameEn||c.name);
   const withLabels = filtered.map(i => ({
     ...i,
     name: (lang === 'ar' ? (i as any).nameAr : (i as any).nameEn) || i.name
-  }))
+  }));
 
   return (
     <main>
