@@ -14,7 +14,7 @@ export default function PriceEditor() {
   // تحقق من كلمة مرور المحرر (أو الأدمن) قبل الدخول
   useEffect(() => {
     (async () => {
-      const pass = window.prompt('ادخل كلمة سر محرر الاسعار') || "
+      const pass = window.prompt('ادخل كلمة سر محرر الاسعار') || ''
       const role = await signInWithPasscode(pass).catch(() => {
         alert('كلمة السر غير صحيحة')
         location.href = '/'
