@@ -14,7 +14,7 @@ export default function PriceEditor() {
   // تحقق من كلمة مرور المحرر (أو الأدمن) قبل الدخول
   useEffect(() => {
     (async () => {
-      const pass = window.prompt('ادخل كلمة سر محرر الاسعار') || ''
+      const pass = window.prompt('ادخل كلمة سر محرر الاسعار') || "
       const role = await signInWithPasscode(pass).catch(() => {
         alert('كلمة السر غير صحيحة')
         location.href = '/'
@@ -57,7 +57,7 @@ export default function PriceEditor() {
         <ul className="space-y-2">
           {items.map(it => (
             <li key={it.id} className="flex items-center gap-3 bg-white/10 rounded-xl p-2">
-              <span className="w-64 truncate">{it.nameAr  it.name  it.nameEn}</span>
+              <span className="w-64 truncate">{it.nameAr||it.name||it.nameEn}</span>
               <input
                 className="input max-w-32 text-right"
                 type="number"
