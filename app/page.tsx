@@ -21,7 +21,7 @@ export default function Home() {
             onChange={e => setRid(e.target.value)}
             placeholder="restaurant-id"
           />
-          <Link className="btn whitespace-nowrap" href={/r/${rid}}>
+          <Link className="btn whitespace-nowrap" href={'/r/${rid'}}>
             فتح القائمة
           </Link>
         </div>
