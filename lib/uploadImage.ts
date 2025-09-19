@@ -9,7 +9,7 @@ export async function uploadImageToCloudinary(file: File) {
 
   const res = await fetch(https://api.cloudinary.com/v1_1/${cloud}/image/upload, {
     method: 'POST',
-    body: form,
+    body: form
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data?.error?.message || 'Upload failed');
