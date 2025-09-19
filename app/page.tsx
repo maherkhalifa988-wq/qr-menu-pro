@@ -1,47 +1,60 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
+import Link from 'next/link'
 
-export default function RestaurantPage({ params }: { params: { restaurantId: string } }) {
-  const { restaurantId } = params
-  const [restaurant, setRestaurant] = useState<any>(null)
-  const [items, setItems] = useState<any[]>([])
-  const [lang, setLang] = useState<'ar' | 'en'>('ar')
-
-  useEffect(() => {
-    // هنا ممكن تجيب البيانات من Firestore أو أي مصدر
-    // مؤقتاً خليتها بيانات تجريبية
-    setRestaurant({ name: 'مطعم النخيل' })
-    setItems([
-      { id: 1, name: 'عصير تفاح', nameEn: 'Apple Juice', nameAr: 'عصير تفاح', price: 0 },
-      { id: 2, name: 'بيتزا مارغريتا', nameEn: 'Pizza Margherita', nameAr: 'بيتزا مارغريتا', price: 0 },
-    ])
-  }, [restaurantId])
-
-  const catLabel = (c: any) =>
-    lang === 'ar' ? (c?.nameAr  c?.name) : (c?.nameEn  c?.name)
-
-  const withLabels = items.map((i: any) => ({
-    ...i,
-    name: (lang === 'ar' ? i?.nameAr : i?.nameEn) || i?.name,
-  }))
+export default function Home() {
+  const [rid, setRid] = useState('al-nakheel')
 
   return (
-    <main>
-      {restaurant && (
-        <div className="mb-6 card overflow-hidden">
-          <div className="relative h-40">
-            <h1 className="text-2xl font-bold">{restaurant.name}</h1>
-          </div>
-        </div>
-      )}
+    <main className="container mx-auto p-6">
+      <header className="mb-8 text-center">
+        <h1 className="text-3xl font-extrabold mb-2">
+          QR Menu Pro (Cloudinary)
+        </h1>
+        <p className="text-white/70">
+          حول قائمة مطعمك إلى تجربة رقمية رائعة
+        </p>
+      </header>
 
-      <section>
-        {withLabels.map((item) => (
-          <div key={item.id} className="card p-4 mb-4">
-            <p className="font-bold">{item.name}</p>
-            <p className="text-sm text-white/70">{item.price} ل.س</p>
-          </div>
-        ))}
+      <section className="card p-5 mb-6">
+        <h2 className="font-bold mb-3">اختبر صفحة الزبون</h2>
+        <div className="flex gap-2">
+          <input
+            className="input"
+            value={rid}
+            onChange={(e) => setRid(e.target.value)}
+            placeholder="restaurant-id"
+          />
+          <Link className="btn whitespace-nowrap" href={/r/${rid}}>
+            فتح القائمة
+          </Link>
+        </div>
+        <p className="text-sm text-white/60 mt-2">
+          اجعل رمز QR يشير إلى:{' '}
+          <code className="bg-white/10 px-2 py-1 rounded">
+            /r/&lt;restaurantId&gt;
+          </code>
+        </p>
+      </section>
+
+      <section className="grid md:grid-cols-2 gap-4">
+        <div className="card p-5">
+          <h3 className="font-bold mb-2">لوحة الإدارة</h3>
+          <p className="text-white/70 mb-4">
+            إدارة المطعم والشعار والخلفية والمجموعات والأصناف
+          </p>
+          <Link className="btn inline-block" href="/admin">
+            دخول لوحة الإدارة
+          </Link>
+        </div>
+
+        <div className="card p-5">
+          <h3 className="font-bold mb-2">محرر الأسعار</h3>
+          <p className="text-white/70 mb-4">تعديل الأسعار فقط</p>
+          <Link className="btn inline-block" href="/editor">
+            اذهب للمحرر
+          </Link>
+        </div>
       </section>
     </main>
   )
