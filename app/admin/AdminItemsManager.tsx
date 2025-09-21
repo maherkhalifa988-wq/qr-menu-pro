@@ -17,8 +17,8 @@ export default function AdminItemsManager({ rid }: { rid: string }) {
     catId:'', nameAr:'', nameEn:'', price:0
   })
 
-  const labelCat  = (c: Cat)  => c.name  c.nameAr  c.nameEn || 'بدون اسم'
-  const labelItem = (i: Item) => i.name  i.nameAr  i.nameEn || 'بدون اسم'
+  const labelCat  = (c: Cat)  => (c.name||c.nameAr||c.nameEn) || 'بدون اسم'
+  const labelItem = (i: Item) => (i.name||i.nameAr||i.nameEn) || 'بدون اسم'
 
   async function loadAll() {
     const qc = query(collection(db,'restaurants',rid,'categories'), orderBy('order','asc'))
@@ -39,7 +39,7 @@ export default function AdminItemsManager({ rid }: { rid: string }) {
       // ارفع الصورة أولاً إن وُجدت
       let imageUrl = ''
       if (newItem.file) {
-        imageUrl = await uploadImage(newItem.file, restaurants/${rid}/items)
+        imageUrl = await uploadImage(newItem.file,+'restaurants/'+{rid}'/items')
       }
 
       await addDoc(collection(db,'restaurants',rid,'items'), {
