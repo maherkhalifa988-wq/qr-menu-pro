@@ -1,10 +1,10 @@
 // lib/uploadImage.ts
-export async function uploadImageToCloudinary(file: File): Promise<string> {
+export async function uploadImageToCloudinary(file: File) {
   const cloud = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
   const preset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
 
   if (!cloud || !preset) {
-    throw new Error('Cloudinary env vars missing (cloud name or upload preset).');
+    throw new Error('Cloudinary env vars missing');
   }
 
   const form = new FormData();
@@ -16,20 +16,17 @@ export async function uploadImageToCloudinary(file: File): Promise<string> {
     body: form
   });
 
-  const text = await res.text(); // اقرأ النص دائماً أولاً
   if (!res.ok) {
-    // حاول استخراج رسالة Cloudinary
     try {
-      const err = JSON.parse(text);
-      throw new Error(err?.error?.message || Upload failed: ${res.status});
+      const err = await res.json();
+      // هنا نستخدم backticks
+      throw new Error(err?.error?.message || 'Upload failed: ${res.status}');
     } catch {
-      throw new Error(Upload failed: ${res.status} ${text});
+      const text = await res.text();
+      throw new Error('Upload failed: ${res.status} ${text}');
     }
   }
 
-  const data = JSON.parse(text);
-  if (!data?.secure_url) {
-    throw new Error('Upload succeeded but no secure_url returned.');
-  }
+  const data = await res.json();
   return data.secure_url as string;
 }
