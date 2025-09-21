@@ -90,7 +90,7 @@ export default function AdminBrandAndImport({ rid = 'al-nakheel' }: { rid?: stri
     const f = e.target.files?.[0]; if (!f) return
     setSaving(true)
     try {
-      const url = await uploadImage(f, restaurants/${restaurantId}/brand)
+      const url = await uploadImage(f, 'restaurants/'+restaurantId+'/brand')
       setLogoUrl(url)
       await updateDoc(doc(db, 'restaurants', restaurantId), { logoUrl: url, updatedAt: Date.now() })
       alert('تم رفع الشعار ✅')
@@ -104,7 +104,7 @@ export default function AdminBrandAndImport({ rid = 'al-nakheel' }: { rid?: stri
     const f = e.target.files?.[0]; if (!f) return
     setSaving(true)
     try {
-      const url = await uploadImage(f, restaurants/${restaurantId}/brand)
+      const url = await uploadImage(f,'restaurants/'+{restaurantId}+'/brand')
       setBgUrl(url)
       await updateDoc(doc(db, 'restaurants', restaurantId), { bgUrl: url, updatedAt: Date.now() })
       alert('تم رفع الخلفية ✅')
