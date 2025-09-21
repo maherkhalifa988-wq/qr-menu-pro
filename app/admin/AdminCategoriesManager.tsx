@@ -15,7 +15,7 @@ export default function AdminCategoriesManager({ rid }: { rid:string }) {
     nameAr:'', nameEn:'', order:0
   })
 
-  const labelCat = (c:Cat) => c.name  c.nameAr  c.nameEn || 'بدون اسم'
+  const labelCat = (c:Cat) => (c.name||c.nameAr||c.nameEn) || 'بدون اسم'
 
   async function load() {
     const qs = await getDocs(query(collection(db,'restaurants',rid,'categories'), orderBy('order','asc')))
@@ -28,7 +28,7 @@ export default function AdminCategoriesManager({ rid }: { rid:string }) {
     setBusy(true)
     try {
       let imageUrl = ''
-      if (newCat.file) imageUrl = await uploadImage(newCat.file, restaurants/${rid}/categories)
+      if (newCat.file) imageUrl = await uploadImage(newCat.file,'restaurants/'+{rid}+'/categories')
       await addDoc(collection(db,'restaurants',rid,'categories'), {
         name: newCat.nameAr || newCat.nameEn,
         nameAr: newCat.nameAr,
