@@ -32,7 +32,7 @@ export default function RestaurantPublicPage() {
     load()
   }, [rid])
 
-  const filtered = selectedCat ? items.filter(i => i.catId === selectedCat) : []
+  const filtered = selectedCat ? items.filter(i => i.catId === selectedCat) : [];
 
   return (
     <main className="container mx-auto p-6">
