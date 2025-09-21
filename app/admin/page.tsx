@@ -29,6 +29,17 @@ export default function AdminPage() {
   return (
     <main>
       <AdminNav />
+      import AdminBrandSection from './AdminBrandSection'
+
+// داخل return
+<main>
+  <AdminNav />
+
+  {/* قسم الهوية: الاسم/الشعار/الخلفية */}
+  <AdminBrandSection rid={rid} />
+
+  {/* ... أي أقسام أخرى مثل ImportFromJsonButton ... */}
+</main>
       <section className="my-6">
   <ImportFromJsonButton />
         </section>
