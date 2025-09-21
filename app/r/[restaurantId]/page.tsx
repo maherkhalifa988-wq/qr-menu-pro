@@ -31,11 +31,10 @@ export default function RestaurantPublicPage() {
   const [selectedCat, setSelectedCat] = useState<string | null>(null)
   const [lang, setLang] = useState<'ar' | 'en'>('ar')
 
-  // ✅ أضفنا || 'بدون اسم'
   const labelCat = (c: Cat) =>
-    (lang === 'ar' ? c.nameAr||c.name : c.nameEn||c.name) || 'بدون اسم'
+    (lang === 'ar' ? (c.nameAr || c.name) : (c.nameEn || c.name)) || 'بدون اسم'
   const labelItem = (i: Item) =>
-    (lang === 'ar' ? i.nameAr||i.name : i.nameEn||i.name) || 'بدون اسم'
+    (lang === 'ar' ? (i.nameAr || i.name) : (i.nameEn || i.name)) || 'بدون اسم'
 
   useEffect(() => {
     async function load() {
@@ -45,28 +44,27 @@ export default function RestaurantPublicPage() {
       )
       const qi = collection(db, 'restaurants', rid, 'items')
       const [cs, is] = await Promise.all([getDocs(qc), getDocs(qi)])
-      setCats(cs.docs.map((d) => ({ id: d.id, ...(d.data() as any) })))
-      setItems(is.docs.map((d) => ({ id: d.id, ...(d.data() as any) })))
+      setCats(cs.docs.map(d => ({ id: d.id, ...(d.data() as any) })))
+      setItems(is.docs.map(d => ({ id: d.id, ...(d.data() as any) })))
     }
     if (rid) load()
   }, [rid])
 
-  const filtered = selectedCat ? items.filter((i) => i.catId === selectedCat) : []
+  const filtered = selectedCat ? items.filter(i => i.catId === selectedCat) : []
 
   return (
     <main className="container mx-auto p-6">
       <header className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">القائمة</h1>
         <div className="flex gap-2">
-          {/* ✅ استخدمنا backticks */}
           <button
-            className={'btn-ghost ${lang === 'ar' ? 'ring-2' : ''}'}
+            className={'btn-ghost ' + (lang === 'ar' ? 'ring-2' : '')}
             onClick={() => setLang('ar')}
           >
             عربي
           </button>
           <button
-            className={'btn-ghost ${lang === 'en' ? 'ring-2' : ''}'}
+            className={'btn-ghost ' + (lang === 'en' ? 'ring-2' : '')}
             onClick={() => setLang('en')}
           >
             EN
@@ -78,7 +76,7 @@ export default function RestaurantPublicPage() {
         <>
           <h2 className="font-bold mb-3">المجموعات</h2>
           <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {cats.map((c) => (
+            {cats.map(c => (
               <button
                 key={c.id}
                 className="card overflow-hidden text-left"
@@ -112,12 +110,12 @@ export default function RestaurantPublicPage() {
               ← رجوع للمجموعات
             </button>
             <div className="text-white/70">
-              {labelCat(cats.find((c) => c.id === selectedCat) || ({} as any))}
+              {labelCat(cats.find(c => c.id === selectedCat) || ({} as any))}
             </div>
           </div>
 
           <ul className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {filtered.map((it) => (
+            {filtered.map(it => (
               <li key={it.id} className="card p-4">
                 <div className="relative h-32 mb-3 bg-white/5 rounded">
                   {it.imageUrl ? (
