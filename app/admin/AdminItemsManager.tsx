@@ -39,7 +39,7 @@ export default function AdminItemsManager({ rid }: { rid: string }) {
       // ارفع الصورة أولاً إن وُجدت
       let imageUrl = ''
       if (newItem.file) {
-        imageUrl = await uploadImage(newItem.file,+'restaurants/'+{rid}'/items')
+        imageUrl = await uploadImage(newItem.file,'restaurants/'+{rid}+'/items')
       }
 
       await addDoc(collection(db,'restaurants',rid,'items'), {
