@@ -39,8 +39,8 @@ export default function RestaurantPublicPage() {
       <header className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">القائمة</h1>
         <div className="flex gap-2">
-          <button className={btn-ghost ${lang==='ar'?'ring-2':''}} onClick={()=>setLang('ar')}>عربي</button>
-          <button className={btn-ghost ${lang==='en'?'ring-2':''}} onClick={()=>setLang('en')}>EN</button>
+          <button className={'btn-ghost ${lang==='ar'?'ring-2':''}'} onClick={()=>setLang('ar')}>عربي</button>
+          <button className={'btn-ghost ${lang==='en'?'ring-2':''}'} onClick={()=>setLang('en')}>EN</button>
         </div>
       </header>
 
