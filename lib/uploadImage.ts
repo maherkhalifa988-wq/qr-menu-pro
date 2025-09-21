@@ -13,7 +13,7 @@ export async function uploadImageToCloudinary(file: File): Promise<string> {
 
   const res = await fetch('https://api.cloudinary.com/v1_1/${cloud}/image/upload', {
     method: 'POST',
-    body: form,
+    body: form
   });
 
   const text = await res.text(); // اقرأ النص دائماً أولاً
