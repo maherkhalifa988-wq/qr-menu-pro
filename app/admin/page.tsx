@@ -29,6 +29,9 @@ export default function AdminPage() {
   return (
     <main>
       <AdminNav />
+      <section className="my-6">
+  <ImportFromJsonButton />
+        </section>
       <section className="card p-5 mb-4">
         <h1 className="text-2xl font-bold">لوحة الادارة</h1>
         <p className="text-white/70">هنا يمكنك إدارة المطعم والمجموعات والأصناف</p>
