@@ -6,8 +6,21 @@ import {
   collection, getDocs, orderBy, query
 } from 'firebase/firestore'
 
-type Cat = { id: string; name?: string; nameAr?: string; nameEn?: string; imageUrl?: string; order?: number }
-type Item = { id: string; catId: string; name?: string; nameAr?: string; nameEn?: string; price?: number; imageUrl?: string }
+type Cat = { id: string
+            name?: string
+            nameAr?: string
+            nameEn?: string
+            imageUrl?: string
+            order?: number
+           }
+type Item = { id: string
+             catId: string
+             name?: string
+             nameAr?: string
+             nameEn?: string
+             price?: number
+             imageUrl?: string 
+            }
 
 export default function RestaurantPublicPage() {
   const params = useParams<{ restaurantId: string }>()
