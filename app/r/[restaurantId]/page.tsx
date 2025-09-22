@@ -24,7 +24,7 @@ type Item = {
 
 export default function RestaurantPublicPage() {
   const params = useParams() as { restaurantId?: string } |null
-  const rid = params?.restaurantId??
+  const rid = params?.restaurantId??''
 
   const [cats, setCats] = useState<Cat[]>([])
   const [items, setItems] = useState<Item[]>([])
