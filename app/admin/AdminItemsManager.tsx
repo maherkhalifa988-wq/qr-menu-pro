@@ -73,7 +73,7 @@ export default function AdminItemsManager({ rid }: { rid: string }) {
   async function changeItemImage(it: Item, file: File) {
     setBusy(true)
     try {
-      const url = await uploadImage(file, 'restaurants/'+rid'+/items')
+      const url = await uploadImage(file, 'restaurants/'+rid+'/items')
       await updateDoc(doc(db,'restaurants',rid,'items',it.id), { imageUrl: url })
       await loadAll()
     } finally { setBusy(false) }
