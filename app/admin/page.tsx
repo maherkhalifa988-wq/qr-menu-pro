@@ -60,7 +60,7 @@ export default function AdminPage() {
       </section>
 
       {/* الهوية: الاسم/الشعار/الخلفية (مسموح للـ admin فقط إن أردت) */}
-      <AdminBrandSection restaurantId={rid} />
+      <AdminBrandSection rid={rid} />
 
       {/* استيراد JSON للمجموعات والأصناف */}
       <section className="my-6">
