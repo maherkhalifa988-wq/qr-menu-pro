@@ -19,13 +19,14 @@ export default function AdminPage() {
 useEffect(() => {
   (async () => {
     const pass = window.prompt('ادخل كلمة سر الادمن/المحرر') || ''
-    try {
-      const r = await signInWithPasscode(pass) // 'admin' | 'editor'
-      setRole(r)
-    } catch (err: any) {
-      alert('فشل الدخول: ${err?.message || err}')
-      location.href = '/'
-    }
+try {
+  const r = await signInWithPasscode(pass)
+  setRole(r)
+} catch (err: any) {
+  console.error('LOGIN_ERROR', err)
+  alert('فشل الدخول: ${err?.message || err}')
+  location.href = '/'
+}
   })()
 }, [])
 
