@@ -1,19 +1,21 @@
 // lib/authClient.ts
-import { getAuth, signInWithCustomToken } from 'firebase/auth'
-import { app } from './firebase'
+export async function signInWithPasscode(code: string): Promise<'admin' | 'editor'> {
+  const pass = (code ?? '').trim();
+  if (!pass) throw new Error('EMPTY_CODE');
 
-export async function signInWithPasscode(passcode: string) {
-  const res = await fetch('/api/passcode', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ passcode, role: 'admin' }),
-  })
+  const res = await fetch(/api/passcode?code=${encodeURIComponent(pass)}, {
+    method: 'GET',
+    cache: 'no-store',
+  });
+
   if (!res.ok) {
-    let msg = 'Passcode failed'
-    try { const j = await res.json(); msg = j?.error || msg } catch {}
-    throw new Error(msg)
+    // 401 -> invalid, أي كود آخر -> مشكلة سيرفر
+    const text = await res.text().catch(() => '');
+    throw new Error(PASSCODE_HTTP_${res.status}: ${text});
   }
-  const { token, role } = await res.json()
-  await signInWithCustomToken(getAuth(app), token)
-  return role as 'admin' | 'editor'
+
+  const data = await res.json().catch(() => ({}));
+  if (data?.role === 'admin' || data?.role === 'editor') return data.role;
+
+  throw new Error('NO_ROLE_RETURNED');
 }
