@@ -9,13 +9,16 @@ export async function signInWithPasscode(code: string): Promise<'admin' | 'edito
   });
 
   if (!res.ok) {
-    // 401 -> invalid, أي كود آخر -> مشكلة سيرفر
-    const text = await res.text().catch(() => '');
-    throw new Error('PASSCODE_HTTP_${res.status}: ${text}');
+    let msg = 'HTTP ${res.status}';
+    try {
+      const j = await res.json();
+      if (j?.error) msg = j.error;
+    } catch {}
+    throw new Error(msg);
   }
 
-  const data = await res.json().catch(() => ({}));
-  if (data?.role === 'admin' || data?.role === 'editor') return data.role;
-
-  throw new Error('NO_ROLE_RETURNED');
+  const data = await res.json();
+  const role = data?.role as 'admin' | 'editor' | undefined;
+  if (role !== 'admin' && role !== 'editor') throw new Error('INVALID_RESPONSE');
+  return role;
 }
