@@ -16,21 +16,18 @@ export default function AdminPage() {
   const [role, setRole] = useState<'admin' | 'editor' | null>(null)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    (async () => {
-      const pass = window.prompt('ادخل كلمة سر الادمن/المحرر') || ''
-      try {
-        const r = await signInWithPasscode(pass)
-        setRole(r)
-      } catch (err) {
-        alert('كلمة السر غير صحيحة')
-        location.href = '/'
-        return
-      } finally {
-        setLoading(false)
-      }
-    })()
-  }, [])
+useEffect(() => {
+  (async () => {
+    const pass = window.prompt('ادخل كلمة سر الادمن/المحرر') || ''
+    try {
+      const r = await signInWithPasscode(pass) // 'admin' | 'editor'
+      setRole(r)
+    } catch (err: any) {
+      alert('فشل الدخول: ${err?.message || err}')
+      location.href = '/'
+    }
+  })()
+}, [])
 
   if (loading) {
     return (
