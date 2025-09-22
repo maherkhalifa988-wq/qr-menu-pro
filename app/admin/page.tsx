@@ -1,40 +1,51 @@
+// app/admin/page.tsx
 'use client'
 
 import { useEffect, useState } from 'react'
 import AdminNav from '@/components/AdminNav'
 import { signInWithPasscode } from '@/lib/authClient'
 
-// هذه الأقسام يجب أن تكون موجودة كملفات في app/admin/
-// لو بعضها غير موجود، احذف استيراده مؤقتًا
+// أقسام الإدارة
 import AdminBrandSection from './AdminBrandSection'
 import ImportFromJsonButton from './ImportFromJsonButton'
 import AdminCategoriesManager from './AdminCategoriesManager'
 import AdminItemsManager from './AdminItemsManager'
 
 export default function AdminPage() {
-  const [rid, setRid] = useState('al-nakheel')
+  const [rid, setRid] = useState('al-nakheel') // المعرّف الافتراضي للمطعم
   const [role, setRole] = useState<'admin' | 'editor' | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     (async () => {
       const pass = window.prompt('ادخل كلمة سر الادمن/المحرر') || ''
-      const r = await signInWithPasscode(pass).catch(() => null)
-      if (!r) {
+      try {
+        const r = await signInWithPasscode(pass)
+        setRole(r)
+      } catch (err) {
         alert('كلمة السر غير صحيحة')
         location.href = '/'
         return
+      } finally {
+        setLoading(false)
       }
-      setRole(r) // 'admin' أو 'editor'
-      // لو مو admin نقدر نخلي بعض الأقسام مقفلة
     })()
   }, [])
 
-  if (!role) {
-    // لا نُظهر شيئًا حتى يكتمل التحقق
+  if (loading) {
     return (
       <main className="container mx-auto p-6">
         <h1 className="text-2xl font-bold mb-2">لوحة الإدارة</h1>
-        <p className="text-white/70">جاري التحقق…</p>
+        <p className="text-white/70">...جاري التحقق</p>
+      </main>
+    )
+  }
+
+  if (!role) {
+    return (
+      <main className="container mx-auto p-6">
+        <h1 className="text-2xl font-bold mb-2">لوحة الإدارة</h1>
+        <p className="text-red-400">فشل تسجيل الدخول</p>
       </main>
     )
   }
@@ -42,15 +53,14 @@ export default function AdminPage() {
   return (
     <main className="container mx-auto p-6">
       <AdminNav />
-
       <header className="mb-6">
         <h1 className="text-2xl font-bold">لوحة الإدارة</h1>
         <p className="text-white/70">تم تسجيل الدخول كـ <b>{role}</b></p>
       </header>
 
-      {/* اختيار/تغيير معرّف المطعم */}
+      {/* اختيار/تغيير معرف المطعم */}
       <section className="card p-5 mb-4">
-        <label className="label">معرّف المطعم (Restaurant ID)</label>
+        <label className="label">معرف المطعم (Restaurant ID)</label>
         <input
           className="input max-w-md"
           value={rid}
@@ -59,8 +69,8 @@ export default function AdminPage() {
         />
       </section>
 
-      {/* الهوية: الاسم/الشعار/الخلفية (مسموح للـ admin فقط إن أردت) */}
-      <AdminBrandSection rid={rid} />
+      {/* الهوية: الاسم/الشعار/الخلفية (مسموح للـ admin فقط) */}
+      {role === 'admin' && <AdminBrandSection rid={rid} />}
 
       {/* استيراد JSON للمجموعات والأصناف */}
       <section className="my-6">
