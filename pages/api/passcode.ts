@@ -8,7 +8,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
       return res.status(405).json({ error: 'Method not allowed' })
     }
 
-    // نقرأ من ?code= أو ?passcode= (أيّهما استخدمت)
+    // read from ?code= or ?passcode=
     const raw = (req.query.code ?? req.query.passcode) as string | string[] | undefined
     const code = Array.isArray(raw) ? raw[0] : (raw || '').toString()
 
@@ -17,12 +17,15 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     const adminPass  = process.env.ADMIN_PASS  || ''
     const editorPass = process.env.EDITOR_PASS || ''
 
+    // SAFE logs (do not log secrets)
+    console.log('[passcode] code.len=', code.length, 'hasAdmin=', !!adminPass, 'hasEditor=', !!editorPass)
+
     if (adminPass && code === adminPass)  return res.status(200).json({ role: 'admin' })
     if (editorPass && code === editorPass) return res.status(200).json({ role: 'editor' })
 
     return res.status(401).json({ error: 'Invalid passcode' })
   } catch (err: any) {
-    console.error('PASSCODE_API_ERROR:', err)
+    console.error('PASSCODE_API_ERROR:', err?.message || err)
     return res.status(500).json({ error: 'Internal server error' })
   }
 }
