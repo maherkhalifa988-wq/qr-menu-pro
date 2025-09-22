@@ -1,32 +1,29 @@
 // lib/authClient.ts
+'use client'
+import { getAuth, signInWithCustomToken } from 'firebase/auth'
+import { app } from './firebase'
+
 export async function signInWithPasscode(code: string): Promise<'admin' | 'editor'> {
-  const pass = (code ?? '').trim();
-  if (!pass) throw new Error('EMPTY_CODE');
+  const pass = (code ?? '').trim()
+  if (!pass) throw new Error('EMPTY_CODE')
 
-  const url = `/api/passcode?code=${encodeURIComponent(pass)}`;
-  console.log('[authClient] calling', url);
-
-  const res = await fetch(url, { method: 'GET', cache: 'no-store' });
-
+  const res = await fetch('/api/passcode?code=${encodeURIComponent(pass)}', {
+    method: 'GET',
+    cache: 'no-store',
+  })
   if (!res.ok) {
-    let msg = `HTTP ${res.status}`;
-    try {
-      const j = await res.json();
-      if (j?.error) msg = j.error;
-    } catch {}
-    console.error('[authClient] fetch failed:', msg);
-    throw new Error(msg);
+    const text = await res.text().catch(() => '')
+    throw new Error('PASSCODE_HTTP_${res.status}: ${text}')
   }
 
-  const data = await res.json().catch(() => ({} as any));
-  console.log('[authClient] response:', data);
+  const data = await res.json()
+  const token: string = data.token
+  const role: 'admin' | 'editor' = data.role
 
-  const role = data?.role as 'admin' | 'editor' | undefined;
-  if (role !== 'admin' && role !== 'editor') {
-    throw new Error('NO_ROLE_RETURNED');
-  }
-  return role;
+  if (!token || !role) throw new Error('INVALID_API_RESPONSE')
+
+  const auth = getAuth(app)
+  await signInWithCustomToken(auth, token)
+
+  return role
 }
-
-// Debug helper (optional; remove later)
-;(globalThis as any).testPass = signInWithPasscode;
