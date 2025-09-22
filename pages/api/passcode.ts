@@ -49,7 +49,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const auth = app.auth()
 
     // يمكنك ربط UID معيّن (مثلاً حسب الدور)
-    const uid = passcode:${role}
+    const uid = 'passcode:${role}'
 
     const token = await auth.createCustomToken(uid, { role })
 
