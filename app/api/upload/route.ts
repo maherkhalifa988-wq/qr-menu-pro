@@ -1,50 +1,70 @@
 // app/api/upload/route.ts
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
-export const revalidate = 0
 
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   try {
-    const cloud = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD
-    const preset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET
-
-    if (!cloud || !preset) {
-      return NextResponse.json(
-        { error: 'Cloudinary ENV vars are missing' },
-        { status: 500 },
-      )
-    }
-
     const form = await req.formData()
-    const file = form.get('file')
-
-    if (!file || !(file instanceof File)) {
+    const file = form.get('file') as File | null
+    if (!file) {
       return NextResponse.json({ error: 'No file' }, { status: 400 })
     }
 
-    const fd = new FormData()
-    fd.append('file', file)
-    fd.append('upload_preset', preset)
-
-    const cldUrl = 'https://api.cloudinary.com/v1_1/${cloud}/image/upload'
-    const res = await fetch(cldUrl, { method: 'POST', body: fd })
-
-    if (!res.ok) {
-      const text = await res.text().catch(() => '')
-      return NextResponse.json(
-        { error: 'Cloudinary upload failed: ${res.status} ${text}' },
-        { status: 502 },
-      )
+    const cloud = process.env.CLOUDINARY_CLOUD_NAME
+    const apiKey = process.env.CLOUDINARY_API_KEY
+    const apiSecret = process.env.CLOUDINARY_API_SECRET
+    if (!cloud  !apiKey  !apiSecret) {
+      return NextResponse.json({ error: 'Cloudinary server ENV missing' }, { status: 500 })
     }
 
-    const data = await res.json()
-    // أهم قيمة عادةً:
-    const secureUrl = data.secure_url as string
-    return NextResponse.json({ url: secureUrl, data }, { status: 200 })
+    // نحول الملف إلى Blob/Stream لتمريره إلى Cloudinary
+    const bodyForm = new FormData()
+    bodyForm.append('file', file)
+    bodyForm.append('upload_preset', '') // لا نستخدم preset، سنوقع الطلب
+    bodyForm.append('timestamp', String(Math.floor(Date.now() / 1000)))
+    // ملاحظة: سنوقّع بدون SDK باستخدام الـ signature:
+    // لسهولة التنفيذ بدون مكتبات إضافية، نرسل api_key و signature جاهزة:
+    // لكن الأسهل: استدعاء endpoint الموقّع via basic auth؟
+    // Cloudinary لا يدعم basic auth مباشرة، لذا نوقّع يدوياً:
+
+    // نبني السلسلة للتوقيع: فقط الحقول المستخدمة (ملف + timestamp)
+    const paramsToSign = new URLSearchParams()
+    paramsToSign.set('timestamp', bodyForm.get('timestamp') as string)
+    const toSign = Array.from(paramsToSign.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([k, v]) => ${k}=${v})
+      .join('&') + apiSecret
+
+    // نحتاج sha1 للتوقيع:
+    const encoder = new TextEncoder()
+    const data = encoder.encode(toSign)
+    const hashBuffer = await crypto.subtle.digest('SHA-1', data)
+    const signature = Array.from(new Uint8Array(hashBuffer))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('')
+
+    bodyForm.set('signature', signature)
+    bodyForm.set('api_key', apiKey)
+
+    const uploadRes = await fetch('https://api.cloudinary.com/v1_1/${cloud}/image/upload', {
+      method: 'POST',
+      body: bodyForm,
+    })
+
+    const text = await uploadRes.text()
+    if (!uploadRes.ok) {
+      let msg = text
+      try { msg = JSON.parse(text)?.error?.message || msg } catch {}
+      return NextResponse.json({ error: msg }, { status: uploadRes.status })
+    }
+
+    const json = JSON.parse(text)
+    // أهم شيء: secure_url
+    return NextResponse.json({ url: json.secure_url }, { status: 200 })
   } catch (err: any) {
-    console.error('UPLOAD_API_ERROR:', err)
-    return NextResponse.json({ error: 'Server error' }, { status: 500 })
+    console.error('UPLOAD_API_ERROR', err)
+    return NextResponse.json({ error: err?.message || 'Internal error' }, { status: 500 })
   }
 }
