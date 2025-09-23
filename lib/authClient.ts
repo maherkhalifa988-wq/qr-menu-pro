@@ -1,7 +1,7 @@
 // lib/authClient.ts
 'use client'
 import { getAuth, signInWithCustomToken } from 'firebase/auth'
-import { app } from '@/firebase'
+import { app } from '@/lib/firebase'
 
 export async function signInWithPasscode(code: string): Promise<'admin' | 'editor'> {
   const pass = (code ?? '').trim()
