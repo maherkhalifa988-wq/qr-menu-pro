@@ -4,7 +4,7 @@ import { db } from '@/lib/firebase'
 import {
   collection, getDocs, addDoc, deleteDoc, doc, updateDoc, orderBy, query
 } from 'firebase/firestore'
-import { uploadImage } from '@/lib/uploadImage'
+import  uploadImage  from '@/lib/uploadImage'
 
 type Cat = { id:string; name?:string; nameAr?:string; nameEn?:string; order?:number; imageUrl?:string }
 
