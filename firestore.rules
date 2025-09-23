@@ -1,9 +1,18 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // مطاعم
     match /restaurants/{rid} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if request.auth != null; // مؤقتاً لأي مستخدم مسجل
     }
+
+    // مجموعات/أصناف داخل المطعم
+    match /restaurants/{rid}/categories/{cid} {
+      allow read: if true;
+      allow write: if request.auth != null; // مؤقتاً
+    }
+
+    // أضف مسارات أخرى لديك بنفس النمط إن لزم
   }
 }
