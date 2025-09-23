@@ -1,32 +1,30 @@
 // lib/authClient.ts
 'use client'
-
-import { signInWithCustomToken } from 'firebase/auth'
-import { auth } from './firebase'
+import { getAuth, signInWithCustomToken } from 'firebase/auth'
+import { app } from '@/firebase'
 
 export async function signInWithPasscode(code: string): Promise<'admin' | 'editor'> {
   const pass = (code ?? '').trim()
   if (!pass) throw new Error('EMPTY_CODE')
 
-  // ✅ بناء الرابط باستخدام URLSearchParams
   const url = new URL('/api/passcode', location.origin)
-  url.search = new URLSearchParams({ code: pass }).toString()
+  url.searchParams.set('code', pass)
 
-  const res = await fetch(url.toString(), {
-    method: 'GET',
-    cache: 'no-store',
-  })
-
+  const res = await fetch(url.toString(), { method: 'GET', cache: 'no-store' })
   if (!res.ok) {
     const text = await res.text().catch(() => '')
     throw new Error('PASSCODE_HTTP_${res.status}: ${text}')
   }
 
-  const { token, role } = await res.json()
-  if (!token || !role) throw new Error('INVALID_RESPONSE')
+  const data = await res.json()
+  const token: string | undefined = data.token   // إن كنت تعيد توكين
+  const role: 'admin' | 'editor' = data.role
 
-  // ✅ تسجيل الدخول باستخدام Firebase
-  await signInWithCustomToken(auth, token)
+  // إن عندك توكين Firebase:
+  if (token) {
+    const auth = getAuth(app)
+    await signInWithCustomToken(auth, token)
+  }
 
   return role
 }
