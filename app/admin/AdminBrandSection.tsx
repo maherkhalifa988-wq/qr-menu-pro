@@ -1,14 +1,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Image from 'next/image'
 import { db } from '@/lib/firebase'
-import { doc, getDoc, updateDoc, setDoc } from 'firebase/firestore'
+import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore'
 
 type Props = { rid: string }
 
 export default function AdminBrandSection({ rid }: Props) {
-  console.log('CLOUD=', process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD,
-            'PRESET=', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET)
   const [loading, setLoading] = useState(true)
   const [savingName, setSavingName] = useState(false)
   const [savingLogo, setSavingLogo] = useState(false)
@@ -26,6 +25,7 @@ export default function AdminBrandSection({ rid }: Props) {
         const ref = doc(db, 'restaurants', rid)
         const snap = await getDoc(ref)
         if (!mounted) return
+
         if (snap.exists()) {
           const data = snap.data() as any
           setName(data.name ?? '')
@@ -42,56 +42,31 @@ export default function AdminBrandSection({ rid }: Props) {
         if (mounted) setLoading(false)
       }
     })()
+
     return () => {
       mounted = false
     }
   }, [rid])
 
-  // رفع ملف إلى Cloudinary (unsigned)
-  async function uploadToCloudinary(file: File): Promise<string> {
-    const cloud = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD
-    const preset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET
-    if (!cloud || !preset) {
-      throw new Error('Cloudinary ENV vars are missing')
-    }
+  // رفع عبر مسار الخادم /api/upload (موقّع في السيرفر)
+  async function uploadViaApiRoute(file: File): Promise<string> {
+    const fd = new FormData()
+    fd.append('file', file)
 
-    const form = new FormData()
-    form.append('file', file)
-    form.append('upload_preset', preset)
-
-    const res = await fetch(
-      'https://api.cloudinary.com/v1_1/${cloud}/image/upload',
-      { method: 'POST', body: form }
-    )
-
-    const text = await res.text()
-    let data: any = {}
-    try {
-      data = JSON.parse(text)
-    } catch {
-      /* ignore */
-    }
-
+    const res = await fetch('/api/upload', { method: 'POST', body: fd })
+    const data = await res.json().catch(() => ({}))
     if (!res.ok) {
-      const msg =
-        data?.error?.message ??
-        (text?.length ? text : 'HTTP ${res.status}')
-      throw new Error(msg)
+      throw new Error(data?.error || 'Upload failed (${res.status}'))
     }
-
-    const url = data?.secure_url as string
-    if (!url) throw new Error('Upload succeeded but no secure_url returned')
-    return url
+    if (!data?.url) throw new Error('No URL returned')
+    return data.url as string
   }
 
   // حفظ الاسم
   async function saveName() {
     setSavingName(true)
     try {
-      await updateDoc(doc(db, 'restaurants', rid), {
-        name,
-        updatedAt: Date.now(),
-      })
+      await updateDoc(doc(db, 'restaurants', rid), { name, updatedAt: Date.now() })
       alert('تم حفظ الاسم ✅')
     } finally {
       setSavingName(false)
@@ -104,12 +79,9 @@ export default function AdminBrandSection({ rid }: Props) {
     if (!f) return
     setSavingLogo(true)
     try {
-      const url = await uploadToCloudinary(f)
+      const url = await uploadViaApiRoute(f)
       setLogoUrl(url)
-      await updateDoc(doc(db, 'restaurants', rid), {
-        logoUrl: url,
-        updatedAt: Date.now(),
-      })
+      await updateDoc(doc(db, 'restaurants', rid), { logoUrl: url, updatedAt: Date.now() })
       alert('تم رفع الشعار ✅')
     } catch (err: any) {
       console.error(err)
@@ -126,12 +98,9 @@ export default function AdminBrandSection({ rid }: Props) {
     if (!f) return
     setSavingBg(true)
     try {
-      const url = await uploadToCloudinary(f)
+      const url = await uploadViaApiRoute(f)
       setBgUrl(url)
-      await updateDoc(doc(db, 'restaurants', rid), {
-        bgUrl: url,
-        updatedAt: Date.now(),
-      })
+      await updateDoc(doc(db, 'restaurants', rid), { bgUrl: url, updatedAt: Date.now() })
       alert('تم رفع الخلفية ✅')
     } catch (err: any) {
       console.error(err)
@@ -155,7 +124,8 @@ export default function AdminBrandSection({ rid }: Props) {
       <div className="flex items-center justify-between mb-3">
         <h2 className="font-bold">الهوية (الشعار/الخلفية/الاسم)</h2>
       </div>
-{/* اسم المطعم */}
+
+      {/* اسم المطعم */}
       <div className="mb-6">
         <label className="label">اسم المطعم</label>
         <div className="flex gap-2 max-w-xl">
@@ -170,28 +140,22 @@ export default function AdminBrandSection({ rid }: Props) {
           </button>
         </div>
       </div>
-
       <div className="grid md:grid-cols-2 gap-6">
         {/* الشعار */}
         <div>
           <label className="label">الشعار</label>
           <div className="flex items-center gap-3">
-            <input
-              type="file"
-              accept="image/*"
-              onChange={onUploadLogo}
-              disabled={savingLogo}
-            />
-            {savingLogo && (
-              <span className="text-white/70 text-sm">...جارٍ الرفع</span>
-            )}
+            <input type="file" accept="image/*" onChange={onUploadLogo} disabled={savingLogo} />
+            {savingLogo && <span className="text-white/70 text-sm">...جارٍ الرفع</span>}
           </div>
           {logoUrl ? (
             <div className="mt-3">
-              <img
+              <Image
                 src={logoUrl}
                 alt="Logo"
-                className="rounded-xl border border-white/10 w-40 h-40 object-cover"
+                width={160}
+                height={160}
+                className="rounded-xl border border-white/10"
               />
             </div>
           ) : (
@@ -203,22 +167,17 @@ export default function AdminBrandSection({ rid }: Props) {
         <div>
           <label className="label">الخلفية</label>
           <div className="flex items-center gap-3">
-            <input
-              type="file"
-              accept="image/*"
-              onChange={onUploadBg}
-              disabled={savingBg}
-            />
-            {savingBg && (
-              <span className="text-white/70 text-sm">...جارٍ الرفع</span>
-            )}
+            <input type="file" accept="image/*" onChange={onUploadBg} disabled={savingBg} />
+            {savingBg && <span className="text-white/70 text-sm">...جارٍ الرفع</span>}
           </div>
           {bgUrl ? (
             <div className="mt-3">
-              <img
+              <Image
                 src={bgUrl}
                 alt="Background"
-                className="rounded-xl border border-white/10 w-full max-w-xl aspect-video object-cover"
+                width={500}
+                height={280}
+                className="rounded-xl border border-white/10 object-cover"
               />
             </div>
           ) : (
