@@ -5,7 +5,6 @@ import Image from 'next/image'
 import { db } from '@/lib/firebase'
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore'
 import uploadImage from '@/lib/uploadImage'
-const url = await uploadImage(file)
 
 type Props = { rid: string }
 
