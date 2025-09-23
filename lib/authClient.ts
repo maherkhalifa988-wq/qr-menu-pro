@@ -24,7 +24,7 @@ export async function signInWithPasscode(code: string): Promise<'admin' | 'edito
   if (token) {
     const auth = getAuth(app)
     await signInWithCustomToken(auth, token)
-    await auth.currentUser?.getldToken(true)
+   await auth.currentUser?.getIdToken(true)
   }
 
   return role
