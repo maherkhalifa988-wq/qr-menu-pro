@@ -1,13 +1,16 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  images: {
-    remotePatterns: [
+// next.config.js
+module.exports = {
+  async headers() {
+    return [
       {
-        protocol: 'https',
-        hostname: 'res.cloudinary.com',
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: "default-src *; connect-src 'self' https://api.cloudinary.com; img-src * blob: data:;",
+          },
+        ],
       },
-    ],
+    ]
   },
 }
-
-export default nextConfig
