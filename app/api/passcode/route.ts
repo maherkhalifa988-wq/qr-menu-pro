@@ -2,7 +2,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import admin from 'firebase-admin'
 
-/** —— تهيئة Firebase Admin لمرة واحدة —— */
+// اجبر التشغيل على Node.js وليس Edge
+export const runtime = 'nodejs'
+// امنع أي كاش واجعل المسار ديناميكي
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
+/** —— تهيئة Firebase Admin مرة واحدة —— */
 function initAdmin() {
   if (!admin.apps.length) {
     const projectId   = process.env.FIREBASE_PROJECT_ID
@@ -14,7 +20,8 @@ function initAdmin() {
         'Missing FIREBASE_* env vars (FIREBASE_PROJECT_ID / FIREBASE_CLIENT_EMAIL / FIREBASE_PRIVATE_KEY)'
       )
     }
-    // بعض لوحات الاستضافة تحفظ الـ \n كنص صريح، نحولها لسطر جديد
+
+    // بعض البيئات تحفظ \n كنص، نحولها لأسطر جديدة
     privateKey = privateKey.replace(/\\n/g, '\n')
 
     admin.initializeApp({
@@ -24,18 +31,18 @@ function initAdmin() {
   return admin
 }
 
-/** —— /api/passcode?code=XXXX —— */
+/** —— GET /api/passcode?code=XXXX —— */
 export async function GET(req: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url)
-    const raw = searchParams.get('code') ?? searchParams.get('passcode') ?? ''
+    // استخدم nextUrl بدلاً من new URL(req.url)
+    const sp = req.nextUrl.searchParams
+    const raw = sp.get('code') ?? sp.get('passcode') ?? ''
     const code = raw.toString().trim()
 
     if (!code) {
       return NextResponse.json({ error: 'Passcode required' }, { status: 400 })
     }
 
-    // اقرأ كلمات السر من المتغيرات
     const adminPass  = process.env.ADMIN_PASS  || ''
     const editorPass = process.env.EDITOR_PASS || ''
 
@@ -47,13 +54,13 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid passcode' }, { status: 401 })
     }
 
-    // أنشئ توكن مخصص يحمل claim للدور
+    // أنشئ توكن مخصص مع claim للدور
     const app = initAdmin()
     const auth = app.auth()
-    const uid = 'passcode:${role}' // مُعرّف بسيط
+    const uid = passcode:${role}
     const token = await auth.createCustomToken(uid, { role })
 
-    return NextResponse.json({ role, token })
+    return NextResponse.json({ role, token }, { status: 200 })
   } catch (err: any) {
     console.error('PASSCODE_API_ERROR:', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
