@@ -7,6 +7,8 @@ import { doc, getDoc, updateDoc, setDoc } from 'firebase/firestore'
 type Props = { rid: string }
 
 export default function AdminBrandSection({ rid }: Props) {
+  console.log('CLOUD=', process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD,
+            'PRESET=', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET)
   const [loading, setLoading] = useState(true)
   const [savingName, setSavingName] = useState(false)
   const [savingLogo, setSavingLogo] = useState(false)
