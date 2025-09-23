@@ -9,7 +9,7 @@ function initAdmin() {
     const clientEmail = process.env.FIREBASE_CLIENT_EMAIL
     let privateKey    = process.env.FIREBASE_PRIVATE_KEY
 
-    if (!projectId  !clientEmail  !privateKey) {
+    if (!projectId||!clientEmail||!privateKey) {
       throw new Error(
         'Missing FIREBASE_* env vars (FIREBASE_PROJECT_ID / FIREBASE_CLIENT_EMAIL / FIREBASE_PRIVATE_KEY)'
       )
