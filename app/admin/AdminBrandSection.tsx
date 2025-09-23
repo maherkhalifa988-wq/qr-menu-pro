@@ -56,7 +56,7 @@ export default function AdminBrandSection({ rid }: Props) {
     const res = await fetch('/api/upload', { method: 'POST', body: fd })
     const data = await res.json().catch(() => ({}))
     if (!res.ok) {
-      throw new Error(data?.error || 'Upload failed (${res.status}'))
+      throw new Error(data?.error || 'Upload failed (${res.status})')
     }
     if (!data?.url) throw new Error('No URL returned')
     return data.url as string
