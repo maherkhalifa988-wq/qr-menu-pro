@@ -28,7 +28,7 @@ export default function AdminCategoriesManager({ rid }: { rid:string }) {
     setBusy(true)
     try {
       let imageUrl = ''
-      if (newCat.file) imageUrl = await uploadImage(newCat.file,'restaurants/'+{rid}+'/categories')
+      if (newCat.file) imageUrl = await uploadImage(newCat.file,'restaurants/'+rid+'/categories')
       await addDoc(collection(db,'restaurants',rid,'categories'), {
         name: newCat.nameAr || newCat.nameEn,
         nameAr: newCat.nameAr,
@@ -45,7 +45,7 @@ export default function AdminCategoriesManager({ rid }: { rid:string }) {
   async function changeImage(c:Cat, file:File) {
     setBusy(true)
     try {
-      const url = await uploadImage(file,'restaurants/'+{rid}+'/categories')
+      const url = await uploadImage(file,'restaurants/'+rid+'/categories')
       await updateDoc(doc(db,'restaurants',rid,'categories',c.id), { imageUrl:url })
       await load()
     } finally { setBusy(false) }
