@@ -1,4 +1,5 @@
 'use client'
+
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import { db } from '@/lib/firebase'
@@ -32,13 +33,19 @@ export default function AdminBrandSection({ rid }: Props) {
           setLogoUrl(data.logoUrl ?? '')
           setBgUrl(data.bgUrl ?? '')
         } else {
-          await setDoc(ref, { name: '', logoUrl: '', bgUrl: '', updatedAt: Date.now() }, { merge: true })
+          await setDoc(
+            ref,
+            { name: '', logoUrl: '', bgUrl: '', updatedAt: Date.now() },
+            { merge: true }
+          )
         }
       } finally {
         if (mounted) setLoading(false)
       }
     })()
-    return () => { mounted = false }
+    return () => {
+      mounted = false
+    }
   }, [rid])
 
   // حفظ الاسم
@@ -121,11 +128,22 @@ export default function AdminBrandSection({ rid }: Props) {
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
-  {savingLogo && <span className="text-white/70 text-sm">...جارٍ الرفع</span>}
+        {/* الشعار */}
+        <div>
+          <label className="label">الشعار</label>
+          <div className="flex items-center gap-3">
+            <input type="file" accept="image/*" onChange={onUploadLogo} disabled={savingLogo} />
+            {savingLogo && <span className="text-white/70 text-sm">...جارٍ الرفع</span>}
           </div>
           {logoUrl ? (
             <div className="mt-3">
-              <Image src={logoUrl} alt="Logo" width={160} height={160} className="rounded-xl border border-white/10" />
+              <Image
+                src={logoUrl}
+                alt="Logo"
+                width={160}
+                height={160}
+                className="rounded-xl border border-white/10"
+              />
             </div>
           ) : (
             <p className="text-white/50 text-sm mt-2">لا يوجد شعار بعد</p>
@@ -141,7 +159,13 @@ export default function AdminBrandSection({ rid }: Props) {
           </div>
           {bgUrl ? (
             <div className="mt-3">
-              <Image src={bgUrl} alt="Background" width={500} height={280} className="rounded-xl border border-white/10 object-cover" />
+              <Image
+                src={bgUrl}
+                alt="Background"
+                width={500}
+                height={280}
+                className="rounded-xl border border-white/10 object-cover"
+              />
             </div>
           ) : (
             <p className="text-white/50 text-sm mt-2">لا توجد خلفية بعد</p>
