@@ -1,6 +1,6 @@
 'use client'
+
 import { useEffect, useState } from 'react'
-import Image from 'next/image'
 import { db } from '@/lib/firebase'
 import { doc, getDoc, updateDoc, setDoc } from 'firebase/firestore'
 
@@ -30,8 +30,11 @@ export default function AdminBrandSection({ rid }: Props) {
           setLogoUrl(data.logoUrl ?? '')
           setBgUrl(data.bgUrl ?? '')
         } else {
-          // إن لم توجد الوثيقة، ننشئها بشكل مبدئي
-          await setDoc(ref, { name: '', logoUrl: '', bgUrl: '', updatedAt: Date.now() }, { merge: true })
+          await setDoc(
+            ref,
+            { name: '', logoUrl: '', bgUrl: '', updatedAt: Date.now() },
+            { merge: true }
+          )
         }
       } finally {
         if (mounted) setLoading(false)
@@ -46,34 +49,47 @@ export default function AdminBrandSection({ rid }: Props) {
   async function uploadToCloudinary(file: File): Promise<string> {
     const cloud = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD
     const preset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET
-    if (!cloud || !preset) throw new Error('Cloudinary ENV vars are missing')
+    if (!cloud || !preset) {
+      throw new Error('Cloudinary ENV vars are missing')
+    }
 
     const form = new FormData()
     form.append('file', file)
     form.append('upload_preset', preset)
 
-    const res = await fetch('https://api.cloudinary.com/v1_1/${cloud}/image/upload', {
-      method: 'POST',
-      body: form,
-    })
-    if (!res.ok) {
-      const text = await res.text()
-      try {
-        const err = JSON.parse(text)
-        throw new Error(err?.error?.message || 'Upload failed: ${res.status}')
-      } catch {
-        throw new Error('Upload failed: ${res.status} ${text}')
-      }
+    const res = await fetch(
+      'https://api.cloudinary.com/v1_1/${cloud}/image/upload',
+      { method: 'POST', body: form }
+    )
+
+    const text = await res.text()
+    let data: any = {}
+    try {
+      data = JSON.parse(text)
+    } catch {
+      /* ignore */
     }
-    const data = await res.json()
-    return data.secure_url as string
+
+    if (!res.ok) {
+      const msg =
+        data?.error?.message ??
+        (text?.length ? text : 'HTTP ${res.status}')
+      throw new Error(msg)
+    }
+
+    const url = data?.secure_url as string
+    if (!url) throw new Error('Upload succeeded but no secure_url returned')
+    return url
   }
 
   // حفظ الاسم
   async function saveName() {
     setSavingName(true)
     try {
-      await updateDoc(doc(db, 'restaurants', rid), { name, updatedAt: Date.now() })
+      await updateDoc(doc(db, 'restaurants', rid), {
+        name,
+        updatedAt: Date.now(),
+      })
       alert('تم حفظ الاسم ✅')
     } finally {
       setSavingName(false)
@@ -88,7 +104,10 @@ export default function AdminBrandSection({ rid }: Props) {
     try {
       const url = await uploadToCloudinary(f)
       setLogoUrl(url)
-      await updateDoc(doc(db, 'restaurants', rid), { logoUrl: url, updatedAt: Date.now() })
+      await updateDoc(doc(db, 'restaurants', rid), {
+        logoUrl: url,
+        updatedAt: Date.now(),
+      })
       alert('تم رفع الشعار ✅')
     } catch (err: any) {
       console.error(err)
@@ -107,7 +126,10 @@ export default function AdminBrandSection({ rid }: Props) {
     try {
       const url = await uploadToCloudinary(f)
       setBgUrl(url)
-      await updateDoc(doc(db, 'restaurants', rid), { bgUrl: url, updatedAt: Date.now() })
+      await updateDoc(doc(db, 'restaurants', rid), {
+        bgUrl: url,
+        updatedAt: Date.now(),
+      })
       alert('تم رفع الخلفية ✅')
     } catch (err: any) {
       console.error(err)
@@ -152,17 +174,22 @@ export default function AdminBrandSection({ rid }: Props) {
         <div>
           <label className="label">الشعار</label>
           <div className="flex items-center gap-3">
-            <input type="file" accept="image/*" onChange={onUploadLogo} disabled={savingLogo} />
-            {savingLogo && <span className="text-white/70 text-sm">...جارٍ الرفع</span>}
+            <input
+              type="file"
+              accept="image/*"
+              onChange={onUploadLogo}
+              disabled={savingLogo}
+            />
+            {savingLogo && (
+              <span className="text-white/70 text-sm">...جارٍ الرفع</span>
+            )}
           </div>
           {logoUrl ? (
             <div className="mt-3">
-              <Image
+              <img
                 src={logoUrl}
                 alt="Logo"
-                width={160}
-                height={160}
-                className="rounded-xl border border-white/10"
+                className="rounded-xl border border-white/10 w-40 h-40 object-cover"
               />
             </div>
           ) : (
@@ -174,17 +201,22 @@ export default function AdminBrandSection({ rid }: Props) {
         <div>
           <label className="label">الخلفية</label>
           <div className="flex items-center gap-3">
-            <input type="file" accept="image/*" onChange={onUploadBg} disabled={savingBg} />
-            {savingBg && <span className="text-white/70 text-sm">...جارٍ الرفع</span>}
+            <input
+              type="file"
+              accept="image/*"
+              onChange={onUploadBg}
+              disabled={savingBg}
+            />
+            {savingBg && (
+              <span className="text-white/70 text-sm">...جارٍ الرفع</span>
+            )}
           </div>
           {bgUrl ? (
             <div className="mt-3">
-              <Image
+              <img
                 src={bgUrl}
                 alt="Background"
-                width={500}
-                height={280}
-                className="rounded-xl border border-white/10 object-cover"
+                className="rounded-xl border border-white/10 w-full max-w-xl aspect-video object-cover"
               />
             </div>
           ) : (
