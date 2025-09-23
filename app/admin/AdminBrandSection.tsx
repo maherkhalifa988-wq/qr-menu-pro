@@ -1,176 +1,196 @@
-// app/admin/AdminBrandSection.tsx
 'use client'
-
-import React, { useState } from 'react'
-import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore'
+import { useEffect, useState } from 'react'
+import Image from 'next/image'
 import { db } from '@/lib/firebase'
-import { uploadImage } from '@/lib/uploadImage'
+import { doc, getDoc, updateDoc, setDoc } from 'firebase/firestore'
 
-type Props = {
-  rid: string // restaurant id
-}
+type Props = { rid: string }
 
 export default function AdminBrandSection({ rid }: Props) {
+  const [loading, setLoading] = useState(true)
+  const [savingName, setSavingName] = useState(false)
+  const [savingLogo, setSavingLogo] = useState(false)
+  const [savingBg, setSavingBg] = useState(false)
+
   const [name, setName] = useState('')
   const [logoUrl, setLogoUrl] = useState<string>('')
   const [bgUrl, setBgUrl] = useState<string>('')
-  const [saving, setSaving] = useState(false)
 
-  async function loadCurrent() {
-    if (!rid) return
-    const ref = doc(db, 'restaurants', rid)
-    const snap = await getDoc(ref)
-    if (snap.exists()) {
-      const data = snap.data() as any
-      setName(data?.name ?? '')
-      setLogoUrl(data?.brand?.logoUrl ?? '')
-      setBgUrl(data?.brand?.bgUrl ?? '')
-    } else {
-      await setDoc(ref, { name: '', brand: {} }, { merge: true })
+  // تحميل بيانات المطعم
+  useEffect(() => {
+    let mounted = true
+    ;(async () => {
+      try {
+        const ref = doc(db, 'restaurants', rid)
+        const snap = await getDoc(ref)
+        if (!mounted) return
+        if (snap.exists()) {
+          const data = snap.data() as any
+          setName(data.name ?? '')
+          setLogoUrl(data.logoUrl ?? '')
+          setBgUrl(data.bgUrl ?? '')
+        } else {
+          // إن لم توجد الوثيقة، ننشئها بشكل مبدئي
+          await setDoc(ref, { name: '', logoUrl: '', bgUrl: '', updatedAt: Date.now() }, { merge: true })
+        }
+      } finally {
+        if (mounted) setLoading(false)
+      }
+    })()
+    return () => {
+      mounted = false
+    }
+  }, [rid])
+
+  // رفع ملف إلى Cloudinary (unsigned)
+  async function uploadToCloudinary(file: File): Promise<string> {
+    const cloud = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD
+    const preset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET
+    if (!cloud || !preset) throw new Error('Cloudinary ENV vars are missing')
+
+    const form = new FormData()
+    form.append('file', file)
+    form.append('upload_preset', preset)
+
+    const res = await fetch('https://api.cloudinary.com/v1_1/${cloud}/image/upload', {
+      method: 'POST',
+      body: form,
+    })
+    if (!res.ok) {
+      const text = await res.text()
+      try {
+        const err = JSON.parse(text)
+        throw new Error(err?.error?.message || 'Upload failed: ${res.status}')
+      } catch {
+        throw new Error('Upload failed: ${res.status} ${text}')
+      }
+    }
+    const data = await res.json()
+    return data.secure_url as string
+  }
+
+  // حفظ الاسم
+  async function saveName() {
+    setSavingName(true)
+    try {
+      await updateDoc(doc(db, 'restaurants', rid), { name, updatedAt: Date.now() })
+      alert('تم حفظ الاسم ✅')
+    } finally {
+      setSavingName(false)
     }
   }
 
-  async function onPickLogo(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file || !rid) return
-    setSaving(true)
+  // رفع الشعار
+  async function onUploadLogo(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0]
+    if (!f) return
+    setSavingLogo(true)
     try {
-      const url = await uploadImage(file, `restaurants/${rid}/brand`)
+      const url = await uploadToCloudinary(f)
       setLogoUrl(url)
-      await updateDoc(doc(db, 'restaurants', rid), {
-        brand: { logoUrl: url, bgUrl },
-      })
-      alert('تم حفظ الشعار ✅')
+      await updateDoc(doc(db, 'restaurants', rid), { logoUrl: url, updatedAt: Date.now() })
+      alert('تم رفع الشعار ✅')
     } catch (err: any) {
       console.error(err)
       alert('فشل رفع الشعار: ' + (err?.message || ''))
     } finally {
-      setSaving(false)
+      setSavingLogo(false)
       e.target.value = ''
     }
   }
 
-  async function onPickBg(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file || !rid) return
-    setSaving(true)
+  // رفع الخلفية
+  async function onUploadBg(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0]
+    if (!f) return
+    setSavingBg(true)
     try {
-      const url = await uploadImage(file, `restaurants/${rid}/brand`)
+      const url = await uploadToCloudinary(f)
       setBgUrl(url)
-      await updateDoc(doc(db, 'restaurants', rid), {
-        brand: { logoUrl, bgUrl: url },
-      })
-      alert('تم حفظ الخلفية ✅')
+      await updateDoc(doc(db, 'restaurants', rid), { bgUrl: url, updatedAt: Date.now() })
+      alert('تم رفع الخلفية ✅')
     } catch (err: any) {
       console.error(err)
       alert('فشل رفع الخلفية: ' + (err?.message || ''))
     } finally {
-      setSaving(false)
+      setSavingBg(false)
       e.target.value = ''
     }
   }
 
-  async function saveName() {
-    if (!rid) return
-    setSaving(true)
-    try {
-      await updateDoc(doc(db, 'restaurants', rid), {
-        name,
-        brand: { logoUrl, bgUrl },
-      })
-      alert('تم حفظ الاسم ✅')
-    } catch (err: any) {
-      console.error(err)
-      alert('فشل الحفظ: ' + (err?.message || ''))
-    } finally {
-      setSaving(false)
-    }
+  if (loading) {
+    return (
+      <section className="card p-5 my-6">
+        <div className="text-white/70">...جارِ تحميل بيانات المطعم</div>
+      </section>
+    )
   }
 
   return (
     <section className="card p-5 my-6">
       <div className="flex items-center justify-between mb-3">
         <h2 className="font-bold">الهوية (الشعار/الخلفية/الاسم)</h2>
-        <button
-          className="btn"
-          onClick={loadCurrent}
-          disabled={!rid || saving}
-          title="تحميل البيانات الحالية من Firestore"
-        >
-          جلب البيانات الحالية
-        </button>
       </div>
-
-      {/* الاسم */}
-      <div className="grid md:grid-cols-[1fr_auto] gap-3 items-end mb-6">
-        <label className="block">
-          <div className="label">اسم المطعم</div>
+{/* اسم المطعم */}
+      <div className="mb-6">
+        <label className="label">اسم المطعم</label>
+        <div className="flex gap-2 max-w-xl">
           <input
-            className="input"
+            className="input flex-1"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="مثال: مطعم النخيل"
+            placeholder="اكتب اسم المطعم"
           />
-        </label>
-        <button className="btn" onClick={saveName} disabled={!rid || saving}>
-          {saving ? '...جارِ الحفظ' : 'حفظ الاسم'}
-        </button>
+          <button className="btn" onClick={saveName} disabled={savingName}>
+            {savingName ? 'جارٍ الحفظ…' : 'حفظ الاسم'}
+          </button>
+        </div>
       </div>
 
-      {/* الشعار */}
-      <div className="grid md:grid-cols-[1fr_auto] gap-3 items-end mb-6">
+      <div className="grid md:grid-cols-2 gap-6">
+        {/* الشعار */}
         <div>
-          <div className="label mb-2">الشعار</div>
+          <label className="label">الشعار</label>
+          <div className="flex items-center gap-3">
+            <input type="file" accept="image/*" onChange={onUploadLogo} disabled={savingLogo} />
+            {savingLogo && <span className="text-white/70 text-sm">...جارٍ الرفع</span>}
+          </div>
           {logoUrl ? (
-            <img
-              src={logoUrl}
-              alt="Logo preview"
-              className="w-48 h-48 object-contain rounded border border-white/10 bg-white/5"
-            />
-          ) : (
-            <div className="w-48 h-48 flex items-center justify-center rounded border border-white/10 bg-white/5 text-white/50">
-              لا يوجد شعار بعد
+            <div className="mt-3">
+              <Image
+                src={logoUrl}
+                alt="Logo"
+                width={160}
+                height={160}
+                className="rounded-xl border border-white/10"
+              />
             </div>
+          ) : (
+            <p className="text-white/50 text-sm mt-2">لا يوجد شعار بعد</p>
           )}
         </div>
-        <label className="btn cursor-pointer">
-          اختر ملف...
-          <input
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={onPickLogo}
-            disabled={!rid || saving}
-          />
-        </label>
-      </div>
 
-      {/* الخلفية */}
-      <div className="grid md:grid-cols-[1fr_auto] gap-3 items-end">
+        {/* الخلفية */}
         <div>
-          <div className="label mb-2">الخلفية</div>
+          <label className="label">الخلفية</label>
+          <div className="flex items-center gap-3">
+            <input type="file" accept="image/*" onChange={onUploadBg} disabled={savingBg} />
+            {savingBg && <span className="text-white/70 text-sm">...جارٍ الرفع</span>}
+          </div>
           {bgUrl ? (
-            <img
-              src={bgUrl}
-              alt="Background preview"
-              className="w-full max-w-xl aspect-video object-cover rounded border border-white/10 bg-white/5"
-            />
-          ) : (
-            <div className="w-full max-w-xl aspect-video flex items-center justify-center rounded border border-white/10 bg-white/5 text-white/50">
-              لا توجد خلفية بعد
+            <div className="mt-3">
+              <Image
+                src={bgUrl}
+                alt="Background"
+                width={500}
+                height={280}
+                className="rounded-xl border border-white/10 object-cover"
+              />
             </div>
+          ) : (
+            <p className="text-white/50 text-sm mt-2">لا توجد خلفية بعد</p>
           )}
         </div>
-        <label className="btn cursor-pointer">
-          اختر ملف...
-          <input
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={onPickBg}
-            disabled={!rid || saving}
-          />
-        </label>
       </div>
     </section>
   )
