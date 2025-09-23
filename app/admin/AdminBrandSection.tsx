@@ -121,7 +121,7 @@ export default function AdminBrandSection({ rid }: Props) {
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
-        {/* الشعار */}{savingLogo && <span className="text-white/70 text-sm">...جارٍ الرفع</span>}
+  {savingLogo && <span className="text-white/70 text-sm">...جارٍ الرفع</span>}
           </div>
           {logoUrl ? (
             <div className="mt-3">
@@ -151,8 +151,3 @@ export default function AdminBrandSection({ rid }: Props) {
     </section>
   )
 }
-        <div>
-          <label className="label">الشعار</label>
-          <div className="flex items-center gap-3">
-            <input type="file" accept="image/*" onChange={onUploadLogo} disabled={savingLogo} />
-            
