@@ -4,7 +4,7 @@ import { db } from '@/lib/firebase'
 import {
   collection, query, orderBy, getDocs, addDoc, deleteDoc, doc, updateDoc
 } from 'firebase/firestore'
-import { uploadImage } from '@/lib/uploadImage' // تأكد من الاسم
+import  uploadImage  from '@/lib/uploadImage' // تأكد من الاسم
 
 type Cat = { id: string; name?: string; nameAr?: string; nameEn?: string }
 type Item = { id: string; name?: string; nameAr?: string; nameEn?: string; price?: number; catId: string; imageUrl?: string }
