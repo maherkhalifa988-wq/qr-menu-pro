@@ -4,10 +4,10 @@ import { getAuth } from 'firebase/auth'
 import { app } from '@/lib/firebase'
 import { signInWithPasscode } from '@/lib/authClient'
 // استورد أقسام الإدارة التي عندك
-import AdminBrandSection from '.app/admin/AdminBrandSection'
-import AdminCategoriesManager from '.app/admin/AdminCategoriesManager'
-import AdminItemsManager from '.app/admin/AdminItemsManager'
-import ImportFromJsonButton from '.app/admin/ImportFromJsonButton'
+import AdminBrandSection from '../admin/AdminBrandSection'
+import AdminCategoriesManager from '../admin/AdminCategoriesManager'
+import AdminItemsManager from '../admin/AdminItemsManager'
+import ImportFromJsonButton from '../admin/ImportFromJsonButton'
 
 export default function AdminPage() {
   const [role, setRole] = useState<'admin' | 'editor' | null>(null)
