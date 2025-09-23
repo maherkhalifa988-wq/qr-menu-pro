@@ -40,9 +40,9 @@ export default function Home() {
             placeholder="restaurant-id"
           />
           {/* ملاحظة: يجب استخدام Template Literal داخل {} */}
-          <Link className="btn whitespace-nowrap" href={'/r/${encodeURIComponent(rid)}'}>
-            فتح القائمة
-          </Link>
+      <Link className="btn whitespace-nowrap" href={'/r/${encodeURIComponent(rid)}'}>
+  فتح القائمة
+</Link>
         </div>
         <p className="text-sm text-white/60 mt-2">
           اجعل رمز QR يشير إلى:{' '}
