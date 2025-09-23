@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic'
 export async function POST(req: Request) {
   try {
     const form = await req.formData()
-    const file = form.get('file') as File  null
+    const file = form.get('file') as File | null
     if (!file) {
       return NextResponse.json({ error: 'No file' }, { status: 400 })
     }
