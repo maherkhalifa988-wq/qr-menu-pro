@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic'
 export async function POST(req: Request) {
   try {
     const form = await req.formData()
-    const file = form.get('file') as File | null
+    const file = form.get('file') as File  null
     if (!file) {
       return NextResponse.json({ error: 'No file' }, { status: 400 })
     }
@@ -15,7 +15,7 @@ export async function POST(req: Request) {
     const cloud = process.env.CLOUDINARY_CLOUD_NAME
     const apiKey = process.env.CLOUDINARY_API_KEY
     const apiSecret = process.env.CLOUDINARY_API_SECRET
-    if (!cloud  !apiKey  !apiSecret) {
+    if (!cloud||!apiKey||!apiSecret) {
       return NextResponse.json({ error: 'Cloudinary server ENV missing' }, { status: 500 })
     }
 
@@ -34,7 +34,7 @@ export async function POST(req: Request) {
     paramsToSign.set('timestamp', bodyForm.get('timestamp') as string)
     const toSign = Array.from(paramsToSign.entries())
       .sort(([a], [b]) => a.localeCompare(b))
-      .map(([k, v]) => ${k}=${v})
+      .map(([k, v]) => '${k}=${v}')
       .join('&') + apiSecret
 
     // نحتاج sha1 للتوقيع:
