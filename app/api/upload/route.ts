@@ -1,63 +1,81 @@
 // app/api/upload/route.ts
-import { NextRequest, NextResponse } from 'next/server'
-import { v2 as cloudinary } from 'cloudinary'
+import { NextResponse } from 'next/server'
+import { createHash } from 'crypto'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-function json(data: any, status = 200) {
-  return new NextResponse(JSON.stringify(data), {
-    status,
-    headers: { 'content-type': 'application/json; charset=utf-8' },
-  })
-}
-
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   try {
     const cloud     = process.env.CLOUDINARY_CLOUD_NAME
     const apiKey    = process.env.CLOUDINARY_API_KEY
     const apiSecret = process.env.CLOUDINARY_API_SECRET
 
-    if (!cloud||!apiKey||!apiSecret) {
-      return json({ error: 'Cloudinary server ENV missing' }, 500)
+    if (!cloud || !apiKey||!apiSecret) {
+      return NextResponse.json(
+        { error: 'Cloudinary server ENV missing', present: {
+          cloud: !!cloud, apiKey: !!apiKey, apiSecret: !!apiSecret
+        }},
+        { status: 500 }
+      )
     }
-
-    // Cloudinary SDK (سيرفر)
-    cloudinary.config({ cloud_name: cloud, api_key: apiKey, api_secret: apiSecret })
 
     const form = await req.formData()
     const file = form.get('file') as File | null
-    const folder = (form.get('folder') as string) || 'qr-menu'
-    if (!file) return json({ error: 'No file' }, 400)
+    if (!file) return NextResponse.json({ error: 'No file' }, { status: 400 })
 
-    const arrayBuffer = await file.arrayBuffer()
-    const buffer = Buffer.from(arrayBuffer)
+    const folder    = 'qr-menu'
+    const timestamp = Math.floor(Date.now() / 1000)
 
-    const secureUrl = await new Promise<string>((resolve, reject) => {
-      const up = cloudinary.uploader.upload_stream(
-        { resource_type: 'image', folder },
-        (err, result) => {
-          if (err) return reject(err)
-          resolve(result?.secure_url || '')
-        }
-      )
-      up.end(buffer)
-    })
+    // signature = sha1("folder=...&timestamp=..."+api_secret)
+    const toSign    = 'folder=${folder}&timestamp=${timestamp}${apiSecret'}
+    const signature = createHash('sha1').update(toSign).digest('hex')
 
-    if (!secureUrl) return json({ error: 'Upload failed' }, 500)
-    return json({ url: secureUrl }, 200)
-  } catch (err: any) {
-    console.error('UPLOAD_API_ERROR:', err)
-    // نرجّع JSON دايمًا حتى لو انهار شيء مبكر
-    return json({ error: err?.message ?? 'Internal error' }, 500)
+    // فحص سريع
+    if (new URL(req.url).searchParams.get('debug') === '1') {
+      return NextResponse.json({ cloud, apiKeyPresent: !!apiKey, secretPresent: !!apiSecret, timestamp, toSign, signature })
+    }
+
+    const up = new FormData()
+    up.append('file', file)
+    up.append('api_key', apiKey)
+    up.append('timestamp', String(timestamp))
+    up.append('signature', signature)
+    up.append('folder', folder)
+
+    const cloudUrl = 'https://api.cloudinary.com/v1_1/${cloud}/image/upload'
+    const r   = await fetch(cloudUrl, { method: 'POST', body: up })
+    const txt = await r.text()
+
+    if (!r.ok) {
+      console.error('CLOUDINARY_ERROR', r.status, txt)
+      return NextResponse.json({ error: txt }, { status: r.status })
+    }
+
+    const json = JSON.parse(txt)
+    const url = json?.secure_url as string | undefined
+    if (!url) return NextResponse.json({ error: 'Upload OK but no secure_url' }, { status: 500 })
+
+    return NextResponse.json({ url }, { status: 200 })
+  } catch (e: any) {
+    console.error('UPLOAD_API_ERROR', e)
+    return NextResponse.json({ error: e?.message ?? 'Internal error' }, { status: 500 })
   }
 }
 
-// اختياري: GET بسيط للتشخيص السريع
-export async function GET() {
-  return new NextResponse(
-    'OK /api/upload (POST only). CLOUDINARY_CLOUD_NAME present=' +
-      (!!process.env.CLOUDINARY_CLOUD_NAME),
-    { status: 200, headers: { 'content-type': 'text/plain; charset=utf-8' } }
-  )
+export async function GET(req: Request) {
+  const cloud     = process.env.CLOUDINARY_CLOUD_NAME
+  const apiKey    = process.env.CLOUDINARY_API_KEY
+  const apiSecret = process.env.CLOUDINARY_API_SECRET
+  const ok = !!cloud && !!apiKey && !!apiSecret
+
+  const u = new URL(req.url)
+  if (u.searchParams.get('debug') === '1') {
+    const timestamp = Math.floor(Date.now() / 1000)
+    const toSign    = 'folder=qr-menu&timestamp=${timestamp}${apiSecret ?? ''}'
+    const signature = apiSecret ? createHash('sha1').update(toSign).digest('hex') : null
+    return NextResponse.json({ ok, cloud, apiKeyPresent: !!apiKey, secretPresent: !!apiSecret, timestamp, toSign, signature }, { status: ok ? 200 : 500 })
+  }
+
+  return NextResponse.json({ ok }, { status: ok ? 200 : 500 })
 }
