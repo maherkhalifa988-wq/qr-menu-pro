@@ -1,7 +1,7 @@
 // app/admin/AdminBrandSection.tsx
 'use client'
 
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { uploadImage } from '@/lib/uploadImage'
@@ -26,7 +26,6 @@ export default function AdminBrandSection({ rid }: Props) {
       setLogoUrl(data?.brand?.logoUrl ?? '')
       setBgUrl(data?.brand?.bgUrl ?? '')
     } else {
-      // أنشئ الوثيقة لو غير موجودة
       await setDoc(ref, { name: '', brand: {} }, { merge: true })
     }
   }
@@ -36,7 +35,7 @@ export default function AdminBrandSection({ rid }: Props) {
     if (!file || !rid) return
     setSaving(true)
     try {
-      const url = await uploadImage(file, 'restaurants/${rid}/brand')
+      const url = await uploadImage(file, `restaurants/${rid}/brand`)
       setLogoUrl(url)
       await updateDoc(doc(db, 'restaurants', rid), {
         brand: { logoUrl: url, bgUrl },
@@ -56,7 +55,7 @@ export default function AdminBrandSection({ rid }: Props) {
     if (!file || !rid) return
     setSaving(true)
     try {
-      const url = await uploadImage(file, 'restaurants/${rid}/brand')
+      const url = await uploadImage(file, `restaurants/${rid}/brand`)
       setBgUrl(url)
       await updateDoc(doc(db, 'restaurants', rid), {
         brand: { logoUrl, bgUrl: url },
@@ -115,7 +114,19 @@ export default function AdminBrandSection({ rid }: Props) {
         </label>
         <button className="btn" onClick={saveName} disabled={!rid || saving}>
           {saving ? '...جارِ الحفظ' : 'حفظ الاسم'}
-        </button>/>
+        </button>
+      </div>
+
+      {/* الشعار */}
+      <div className="grid md:grid-cols-[1fr_auto] gap-3 items-end mb-6">
+        <div>
+          <div className="label mb-2">الشعار</div>
+          {logoUrl ? (
+            <img
+              src={logoUrl}
+              alt="Logo preview"
+              className="w-48 h-48 object-contain rounded border border-white/10 bg-white/5"
+            />
           ) : (
             <div className="w-48 h-48 flex items-center justify-center rounded border border-white/10 bg-white/5 text-white/50">
               لا يوجد شعار بعد
@@ -164,14 +175,3 @@ export default function AdminBrandSection({ rid }: Props) {
     </section>
   )
 }
-
-      {/* الشعار */}
-      <div className="grid md:grid-cols-[1fr_auto] gap-3 items-end mb-6">
-        <div>
-          <div className="label mb-2">الشعار</div>
-          {logoUrl ? (
-            <img
-              src={logoUrl}
-              alt="Logo preview"
-              className="w-48 h-48 object-contain rounded border border-white/10 bg-white/5"
-              
