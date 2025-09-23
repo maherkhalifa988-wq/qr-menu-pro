@@ -8,7 +8,7 @@ export default async function uploadImage(file: File): Promise<string> {
   const data = await res.json().catch(() => ({}))
 
   if (!res.ok) {
-    throw new Error(data?.error || Upload 'failed (${res.status})')
+    throw new Error(data?.error || 'Upload failed (${res.status})')
   }
   if (!data?.url) {
     throw new Error('Upload OK but no URL returned')
