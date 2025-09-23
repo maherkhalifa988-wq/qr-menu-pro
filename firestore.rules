@@ -2,12 +2,10 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper: يرجع دور المستخدم
     function role() {
       return request.auth != null ? request.auth.token.role : null;
     }
 
-    // كل المستخدمين يقدرون يقرؤون
     match /restaurants/{rid} {
       allow read: if true;
       allow write: if role() == 'admin';
@@ -19,38 +17,8 @@ service cloud.firestore {
 
       match /items/{iid} {
         allow read: if true;
-        // admin يقدر يكتب أي شيء
+        // admin يكتب أي شيء — editor يعدّل السعر فقط
         allow write: if role() == 'admin'
-          // editor يقدر يعدّل السعر فقط
-          || (role() == 'editor'
-              && request.resource.data.diff(resource.data).changedKeys().hasOnly(['price']));
-      }
-    }
-  }
-}rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-
-    // Helper: يرجع دور المستخدم
-    function role() {
-      return request.auth != null ? request.auth.token.role : null;
-    }
-
-    // كل المستخدمين يقدرون يقرؤون
-    match /restaurants/{rid} {
-      allow read: if true;
-      allow write: if role() == 'admin';
-
-      match /categories/{cid} {
-        allow read: if true;
-        allow write: if role() == 'admin';
-      }
-
-      match /items/{iid} {
-        allow read: if true;
-        // admin يقدر يكتب أي شيء
-        allow write: if role() == 'admin'
-          // editor يقدر يعدّل السعر فقط
           || (role() == 'editor'
               && request.resource.data.diff(resource.data).changedKeys().hasOnly(['price']));
       }
