@@ -1,22 +1,17 @@
 // lib/uploadImage.ts
-export async function uploadImage(file: File, folder?: string): Promise<string> {
-  const cloud  = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD!
-  const preset = process.env.NEXT_PUBLIC_CLOUDINARY_PRESET!
-  if (!cloud || !preset) throw new Error('Missing Cloudinary env vars')
+// يرفع دائمًا عبر مسار السيرفر /api/upload (موقّع)، لا يحتاج NEXT_PUBLIC_*.
+export default async function uploadImage(file: File): Promise<string> {
+  const fd = new FormData()
+  fd.append('file', file)
 
-  const form = new FormData()
-  form.append('file', file)
-  form.append('upload_preset', preset)
-  if (folder) form.append('folder', folder)
-
-  const url = 'https://api.cloudinary.com/v1_1/${cloud}/image/upload'
-  const res = await fetch(url, { method: 'POST', body: form })
+  const res = await fetch('/api/upload', { method: 'POST', body: fd })
+  const data = await res.json().catch(() => ({}))
 
   if (!res.ok) {
-    const text = await res.text()
-    throw new Error('Upload failed: ${res.status} ${text}')
+    throw new Error(data?.error || Upload 'failed (${res.status})')
   }
-
-  const data = await res.json()
-  return data.secure_url as string
+  if (!data?.url) {
+    throw new Error('Upload OK but no URL returned')
+  }
+  return data.url as string
 }
