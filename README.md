@@ -1,6 +1,6 @@
 # QR Menu Pro (Cloudinary + Firestore)
 
-مشروع لإدارة قوائم المطاعم وعرضها عبر QR Code.
+.
   
 ## ✨ المزايا
 - رفع الصور باستخدام Cloudinary بدل Firebase Storage.
