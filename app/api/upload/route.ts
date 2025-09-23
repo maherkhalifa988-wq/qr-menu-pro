@@ -11,7 +11,7 @@ export async function POST(req: Request) {
     const apiKey    = process.env.CLOUDINARY_API_KEY
     const apiSecret = process.env.CLOUDINARY_API_SECRET
 
-    if (!cloud || !apiKey||!apiSecret) {
+    if (!cloud || !apiKey || !apiSecret) {
       return NextResponse.json(
         { error: 'Cloudinary server ENV missing', present: {
           cloud: !!cloud, apiKey: !!apiKey, apiSecret: !!apiSecret
@@ -28,7 +28,7 @@ export async function POST(req: Request) {
     const timestamp = Math.floor(Date.now() / 1000)
 
     // signature = sha1("folder=...&timestamp=..."+api_secret)
-    const toSign    = 'folder=${folder}&timestamp=${timestamp}${apiSecret'}
+    const toSign    = folder=${folder}&timestamp=${timestamp}${apiSecret}
     const signature = createHash('sha1').update(toSign).digest('hex')
 
     // فحص سريع
