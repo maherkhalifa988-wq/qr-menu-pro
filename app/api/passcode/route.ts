@@ -57,7 +57,7 @@ export async function GET(req: NextRequest) {
     // أنشئ توكن مخصص مع claim للدور
     const app = initAdmin()
     const auth = app.auth()
-    const uid = passcode:${role}
+    const uid = 'passcode:${role}'
     const token = await auth.createCustomToken(uid, { role })
 
     return NextResponse.json({ role, token }, { status: 200 })
