@@ -83,24 +83,43 @@ export default function AdminBrandSection({ rid }: Props) {
   }
 
   // رفع الشعار
-  async function onUploadLogo(e: React.ChangeEvent<HTMLInputElement>) {
-    const f = e.target.files?.[0]
-    if (!f) return
-    setSavingLogo(true)
-    try {
-      const url = await uploadViaApiRoute(f)
-      setLogoUrl(url)
-      await updateDoc(doc(db, 'restaurants', rid), { logoUrl: url, updatedAt: Date.now() })
-      alert('تم رفع الشعار ✅')
-    } catch (err: any) {
-      console.error(err)
-      alert('فشل رفع الشعار: ' + (err?.message || ''))
-    } finally {
-      setSavingLogo(false)
-      e.target.value = ''
-    }
+// رفع الشعار
+async function onUploadLogo(e: React.ChangeEvent<HTMLInputElement>) {
+  const f = e.target.files?.[0]
+  if (!f) return
+  setSavingLogo(true)
+  try {
+    const url = await uploadImage(f)   // ✅ هنا فقط
+    setLogoUrl(url)
+    await updateDoc(doc(db, 'restaurants', rid), { logoUrl: url, updatedAt: Date.now() })
+    alert('تم رفع الشعار ✅')
+  } catch (err: any) {
+    console.error(err)
+    alert('فشل رفع الشعار: ' + (err?.message || ''))
+  } finally {
+    setSavingLogo(false)
+    e.target.value = ''
   }
+}
 
+// رفع الخلفية
+async function onUploadBg(e: React.ChangeEvent<HTMLInputElement>) {
+  const f = e.target.files?.[0]
+  if (!f) return
+  setSavingBg(true)
+  try {
+    const url = await uploadImage(f)   // ✅ وهنا
+    setBgUrl(url)
+    await updateDoc(doc(db, 'restaurants', rid), { bgUrl: url, updatedAt: Date.now() })
+    alert('تم رفع الخلفية ✅')
+  } catch (err: any) {
+    console.error(err)
+    alert('فشل رفع الخلفية: ' + (err?.message || ''))
+  } finally {
+    setSavingBg(false)
+    e.target.value = ''
+  }
+}
   // رفع الخلفية
   async function onUploadBg(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0]
