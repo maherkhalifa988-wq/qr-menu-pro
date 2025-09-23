@@ -1,5 +1,4 @@
 'use client'
-
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import { db } from '@/lib/firebase'
@@ -33,44 +32,15 @@ export default function AdminBrandSection({ rid }: Props) {
           setLogoUrl(data.logoUrl ?? '')
           setBgUrl(data.bgUrl ?? '')
         } else {
-          await setDoc(
-            ref,
-            { name: '', logoUrl: '', bgUrl: '', updatedAt: Date.now() },
-            { merge: true }
-          )
+          await setDoc(ref, { name: '', logoUrl: '', bgUrl: '', updatedAt: Date.now() }, { merge: true })
         }
       } finally {
         if (mounted) setLoading(false)
       }
     })()
-
-    return () => {
-      mounted = false
-    }
+    return () => { mounted = false }
   }, [rid])
 
-  // رفع عبر مسار الخادم /api/upload (موقّع في السيرفر)
- async function uploadViaApiRoute(file: File): Promise<string> {
-  const fd = new FormData()
-  fd.append('file', file)
-  // fd.append('folder', 'qr-menu') // اختياري
-
-  const res = await fetch('/api/upload', { method: 'POST', body: fd })
-  const text = await res.text()
-
-  // حاول نفكّه JSON وإن ما زبط خلّه null
-  let data: any = null
-  try { data = JSON.parse(text) } catch {}
-
-  if (!res.ok) {
-    // لو السيرفر رجّع HTML، بنشوفه كنص ونقدر نعرف وش صار
-    throw new Error(data?.error||text||'HTTP ${res.status}')
-  }
-
-  const url = data?.url as string | undefined
-  if (!url) throw new Error('Upload OK but no url in response')
-  return url
-}
   // حفظ الاسم
   async function saveName() {
     setSavingName(true)
@@ -83,50 +53,31 @@ export default function AdminBrandSection({ rid }: Props) {
   }
 
   // رفع الشعار
-// رفع الشعار
-async function onUploadLogo(e: React.ChangeEvent<HTMLInputElement>) {
-  const f = e.target.files?.[0]
-  if (!f) return
-  setSavingLogo(true)
-  try {
-    const url = await uploadImage(f)   // ✅ هنا فقط
-    setLogoUrl(url)
-    await updateDoc(doc(db, 'restaurants', rid), { logoUrl: url, updatedAt: Date.now() })
-    alert('تم رفع الشعار ✅')
-  } catch (err: any) {
-    console.error(err)
-    alert('فشل رفع الشعار: ' + (err?.message || ''))
-  } finally {
-    setSavingLogo(false)
-    e.target.value = ''
+  async function onUploadLogo(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0]
+    if (!f) return
+    setSavingLogo(true)
+    try {
+      const url = await uploadImage(f)
+      setLogoUrl(url)
+      await updateDoc(doc(db, 'restaurants', rid), { logoUrl: url, updatedAt: Date.now() })
+      alert('تم رفع الشعار ✅')
+    } catch (err: any) {
+      console.error(err)
+      alert('فشل رفع الشعار: ' + (err?.message || ''))
+    } finally {
+      setSavingLogo(false)
+      e.target.value = ''
+    }
   }
-}
 
-// رفع الخلفية
-async function onUploadBg(e: React.ChangeEvent<HTMLInputElement>) {
-  const f = e.target.files?.[0]
-  if (!f) return
-  setSavingBg(true)
-  try {
-    const url = await uploadImage(f)   // ✅ وهنا
-    setBgUrl(url)
-    await updateDoc(doc(db, 'restaurants', rid), { bgUrl: url, updatedAt: Date.now() })
-    alert('تم رفع الخلفية ✅')
-  } catch (err: any) {
-    console.error(err)
-    alert('فشل رفع الخلفية: ' + (err?.message || ''))
-  } finally {
-    setSavingBg(false)
-    e.target.value = ''
-  }
-}
   // رفع الخلفية
   async function onUploadBg(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0]
     if (!f) return
     setSavingBg(true)
     try {
-      const url = await uploadViaApiRoute(f)
+      const url = await uploadImage(f)
       setBgUrl(url)
       await updateDoc(doc(db, 'restaurants', rid), { bgUrl: url, updatedAt: Date.now() })
       alert('تم رفع الخلفية ✅')
@@ -168,23 +119,13 @@ async function onUploadBg(e: React.ChangeEvent<HTMLInputElement>) {
           </button>
         </div>
       </div>
+
       <div className="grid md:grid-cols-2 gap-6">
-        {/* الشعار */}
-        <div>
-          <label className="label">الشعار</label>
-          <div className="flex items-center gap-3">
-            <input type="file" accept="image/*" onChange={onUploadLogo} disabled={savingLogo} />
-            {savingLogo && <span className="text-white/70 text-sm">...جارٍ الرفع</span>}
+        {/* الشعار */}{savingLogo && <span className="text-white/70 text-sm">...جارٍ الرفع</span>}
           </div>
           {logoUrl ? (
             <div className="mt-3">
-              <Image
-                src={logoUrl}
-                alt="Logo"
-                width={160}
-                height={160}
-                className="rounded-xl border border-white/10"
-              />
+              <Image src={logoUrl} alt="Logo" width={160} height={160} className="rounded-xl border border-white/10" />
             </div>
           ) : (
             <p className="text-white/50 text-sm mt-2">لا يوجد شعار بعد</p>
@@ -200,13 +141,7 @@ async function onUploadBg(e: React.ChangeEvent<HTMLInputElement>) {
           </div>
           {bgUrl ? (
             <div className="mt-3">
-              <Image
-                src={bgUrl}
-                alt="Background"
-                width={500}
-                height={280}
-                className="rounded-xl border border-white/10 object-cover"
-              />
+              <Image src={bgUrl} alt="Background" width={500} height={280} className="rounded-xl border border-white/10 object-cover" />
             </div>
           ) : (
             <p className="text-white/50 text-sm mt-2">لا توجد خلفية بعد</p>
@@ -216,3 +151,8 @@ async function onUploadBg(e: React.ChangeEvent<HTMLInputElement>) {
     </section>
   )
 }
+        <div>
+          <label className="label">الشعار</label>
+          <div className="flex items-center gap-3">
+            <input type="file" accept="image/*" onChange={onUploadLogo} disabled={savingLogo} />
+            
