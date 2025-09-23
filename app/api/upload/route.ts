@@ -1,4 +1,3 @@
-// app/api/upload/route.ts
 import { NextResponse } from 'next/server'
 import { createHash } from 'crypto'
 
@@ -11,13 +10,12 @@ export async function POST(req: Request) {
     const apiKey    = process.env.CLOUDINARY_API_KEY
     const apiSecret = process.env.CLOUDINARY_API_SECRET
 
-    if (!cloud||!apiKey||!apiSecret) {
+    if (!cloud || !apiKey || !apiSecret) {
       return NextResponse.json(
-        {
-          error: 'Cloudinary server ENV missing',
-          present: { cloud: !!cloud, apiKey: !!apiKey, apiSecret: !!apiSecret },
-        },
-        { status: 500 },
+        { error: 'Cloudinary server ENV missing', present: {
+          cloud: !!cloud, apiKey: !!apiKey, apiSecret: !!apiSecret
+        }},
+        { status: 500 }
       )
     }
 
@@ -29,19 +27,12 @@ export async function POST(req: Request) {
     const timestamp = Math.floor(Date.now() / 1000)
 
     // signature = sha1("folder=...&timestamp=..."+api_secret)
-    const toSign    = 'folder=${folder}&timestamp=${timestamp}${apiSecret}'
+    const toSign    = `folder=${folder}&timestamp=${timestamp}${apiSecret}`
     const signature = createHash('sha1').update(toSign).digest('hex')
 
     // فحص سريع
     if (new URL(req.url).searchParams.get('debug') === '1') {
-      return NextResponse.json({
-        cloud,
-        apiKeyPresent: !!apiKey,
-        secretPresent: !!apiSecret,
-        timestamp,
-        toSign,
-        signature,
-      })
+      return NextResponse.json({ cloud, apiKeyPresent: !!apiKey, secretPresent: !!apiSecret, timestamp, toSign, signature })
     }
 
     const up = new FormData()
@@ -51,7 +42,7 @@ export async function POST(req: Request) {
     up.append('signature', signature)
     up.append('folder', folder)
 
-    const cloudUrl = 'https://api.cloudinary.com/v1_1/${cloud}/image/upload'
+    const cloudUrl = `https://api.cloudinary.com/v1_1/${cloud}/image/upload`
     const r   = await fetch(cloudUrl, { method: 'POST', body: up })
     const txt = await r.text()
 
@@ -80,12 +71,9 @@ export async function GET(req: Request) {
   const u = new URL(req.url)
   if (u.searchParams.get('debug') === '1') {
     const timestamp = Math.floor(Date.now() / 1000)
-    const toSign    = 'folder=qr-menu&timestamp=${timestamp}${apiSecret ?? ''}'
+    const toSign    = `folder=qr-menu&timestamp=${timestamp}${apiSecret ?? ''}`
     const signature = apiSecret ? createHash('sha1').update(toSign).digest('hex') : null
-    return NextResponse.json(
-      { ok, cloud, apiKeyPresent: !!apiKey, secretPresent: !!apiSecret, timestamp, toSign, signature },
-      { status: ok ? 200 : 500 },
-    )
+    return NextResponse.json({ ok, cloud, apiKeyPresent: !!apiKey, secretPresent: !!apiSecret, timestamp, toSign, signature }, { status: ok ? 200 : 500 })
   }
 
   return NextResponse.json({ ok }, { status: ok ? 200 : 500 })
