@@ -49,19 +49,27 @@ export default function AdminBrandSection({ rid }: Props) {
   }, [rid])
 
   // رفع عبر مسار الخادم /api/upload (موقّع في السيرفر)
-  async function uploadViaApiRoute(file: File): Promise<string> {
-    const fd = new FormData()
-    fd.append('file', file)
+ async function uploadViaApiRoute(file: File): Promise<string> {
+  const fd = new FormData()
+  fd.append('file', file)
+  // fd.append('folder', 'qr-menu') // اختياري
 
-    const res = await fetch('/api/upload', { method: 'POST', body: fd })
-    const data = await res.json().catch(() => ({}))
-    if (!res.ok) {
-      throw new Error(data?.error || 'Upload failed (${res.status})')
-    }
-    if (!data?.url) throw new Error('No URL returned')
-    return data.url as string
+  const res = await fetch('/api/upload', { method: 'POST', body: fd })
+  const text = await res.text()
+
+  // حاول نفكّه JSON وإن ما زبط خلّه null
+  let data: any = null
+  try { data = JSON.parse(text) } catch {}
+
+  if (!res.ok) {
+    // لو السيرفر رجّع HTML، بنشوفه كنص ونقدر نعرف وش صار
+    throw new Error(data?.error||text||'HTTP ${res.status}')
   }
 
+  const url = data?.url as string | undefined
+  if (!url) throw new Error('Upload OK but no url in response')
+  return url
+}
   // حفظ الاسم
   async function saveName() {
     setSavingName(true)
