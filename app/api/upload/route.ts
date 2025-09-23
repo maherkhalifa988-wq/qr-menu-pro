@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
     const cloud     = process.env.CLOUDINARY_CLOUD_NAME
     const apiKey    = process.env.CLOUDINARY_API_KEY
     const apiSecret = process.env.CLOUDINARY_API_SECRET
-    if (!cloud  !apiKey  !apiSecret) {
+    if (!cloud||!apiKey||!apiSecret) {
       return NextResponse.json({ error: 'Cloudinary server ENV missing' }, { status: 500 })
     }
 
