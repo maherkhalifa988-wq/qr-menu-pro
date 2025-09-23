@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server'
-
-// لا تُرجع إلا المتغيرات العامة NEXT_PUBLIC_ فقط
 export async function GET() {
   return NextResponse.json({
-    cloud: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD || null,
-    preset: process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || null,
+    cloud:  process.env.CLOUDINARY_CLOUD_NAME,
+    api:    !!process.env.CLOUDINARY_API_KEY,
+    secret: !!process.env.CLOUDINARY_API_SECRET,
   })
 }
