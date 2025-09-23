@@ -1,4 +1,4 @@
-// app/api/upload/route.ts
+
 import { NextResponse } from 'next/server'
 import { createHash } from 'crypto'
 
