@@ -19,7 +19,7 @@ async function uploadViaApiRoute(file: File): Promise<string> {
   let data: any = null
   try { data = JSON.parse(text) } catch {}
 
-  if (!res.ok) throw new Error(data?.error  text ||'HTTP ${res.status}')
+  if (!res.ok) throw new Error(data?.error||text||'HTTP ${res.status}')
   const url = data?.url as string | undefined
   if (!url) throw new Error('Upload OK but no url in response')
   return url
