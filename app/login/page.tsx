@@ -1,39 +1,36 @@
 // app/login/page.tsx
 'use client'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { signInWithPasscode } from '@/lib/authClient'
 
-export const dynamic = 'force-static' // لا نحتاج بيانات وقت التنفيذ هنا
-export const revalidate = 0
-
 export default function LoginPage() {
   const router = useRouter()
   const search = useSearchParams()
-  // مسار الرجوع بعد الدخول (إن لم يوجد، للـ admin أو editor لاحقًا)
-  const toParam = search?.get('to') ?? ''
+  const toParam = search?.get('to') ?? '' // قد يكون فارغ
+
   const [pass, setPass] = useState('')
   const [loading, setLoading] = useState(false)
-  const [errMsg, setErrMsg] = useState<string | null>(null)
+  const [err, setErr] = useState<string | null>(null)
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
-    setErrMsg(null)
+    setErr(null)
     const code = pass.trim()
-    if (!code) {
-      setErrMsg('أدخل كلمة المرور')
-      return
-    }
+    if (!code) return setErr('أدخل كلمة المرور')
+
     setLoading(true)
     try {
       const role = await signInWithPasscode(code)
-      // إن كان هناك ?to= فنرجع له، وإلا نختار الوجهة حسب الدور
       const dest = toParam || (role === 'admin' ? '/admin' : '/editor')
       router.replace(dest)
-    } catch (err: any) {
-      console.error('LOGIN_ERROR', err)
-      setErrMsg(`فشل الدخول: ${err?.message || 'تحقق من الكلمة'}`)
+    } catch (ex: any) {
+      console.error('LOGIN_ERROR', ex)
+      setErr(ex?.message || 'فشل الدخول')
     } finally {
       setLoading(false)
     }
@@ -51,18 +48,11 @@ export default function LoginPage() {
           placeholder="أدخل كلمة المرور"
           autoFocus
         />
-        {errMsg && <p className="text-red-400 text-sm">{errMsg}</p>}
+        {err && <p className="text-red-400 text-sm">{err}</p>}
         <button className="btn w-full" disabled={loading}>
           {loading ? '...جارٍ الدخول' : 'دخول'}
         </button>
       </form>
-      {toParam ? (
-        <p className="text-white/60 text-sm mt-3">سيتم تحويلك بعد الدخول إلى: <code>{toParam}</code></p>
-      ) : (
-        <p className="text-white/60 text-sm mt-3">
-          سيتم تحويل الأدمن إلى <code>/admin</code> والمحرّر إلى <code>/editor</code>
-        </p>
-      )}
     </main>
   )
 }
