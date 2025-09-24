@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
-import { db } from '@/lib/firebase'
+import { db, ensureSignedIn } from '@/lib/firebase'
 import {
   doc, getDoc, setDoc, updateDoc,
   collection, getDocs, addDoc, deleteDoc, writeBatch
@@ -58,6 +58,7 @@ export default function AdminBrandSection({ rid }: Props) {
     let mounted = true
     ;(async () => {
       try {
+        await ensureSignedIn()
         const ref = doc(db, 'restaurants', rid)
         const snap = await getDoc(ref)
         if (!mounted) return
