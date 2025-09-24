@@ -124,7 +124,7 @@ export default function AdminBrandSection({ rid }: Props) {
       alert('✅ تم رفع الخلفية وحفظها')
     } catch (err: any) {
       console.error(err)
-      alert(❌ مشكلة: ${err?.message ?? err})
+      alert('❌ مشكلة: ${err?.message ?? err}')
     } finally {
       setSavingBg(false)
       e.target.value = ''
