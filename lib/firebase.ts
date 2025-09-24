@@ -15,8 +15,27 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID!,
   // measurementId اختياري
 }
+// تأكيد أن القيم وصلت للواجهة (للتشخيص)
+if (typeof window !== 'undefined') {
+  console.log(
+    '🔎 Firebase config:',
+    {
+      apiKey: !!firebaseConfig.apiKey,
+      authDomain: !!firebaseConfig.authDomain,
+      projectId: firebaseConfig.projectId,
+      storageBucket: !!firebaseConfig.storageBucket,
+      messagingSenderId: !!firebaseConfig.messagingSenderId,
+      appId: !!firebaseConfig.appId,
+    }
+  )
+}
 
-export const app = getApps().length ? getApps()[0]! : initializeApp(firebaseConfig)
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig)
 export const db = getFirestore(app)
 export const auth = getAuth(app)
-export const functions = getFunctions(app)
+
+export async function ensureSignedIn() {
+  if (!auth.currentUser) {
+    await signInAnonymously(auth)
+  }
+}
