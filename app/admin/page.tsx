@@ -1,28 +1,23 @@
 'use client'
 
 import { useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { getStoredRole } from '@/lib/authClient'
 import AdminBrandSection from './AdminBrandSection'
-// إن كان عندك أجزاء إضافية في لوحة الإدارة استوردها هنا
 
-// عطّل أي كاش/توليد ثابت لهذه الصفحة (آمن مع App Router)
+// عطّل أي كاش/توليد ثابت
 export const revalidate = 0
 export const dynamic = 'force-dynamic'
 
-const RID = 'al-nakheel' // عدّلها لو عندك تعدد مطاعم
+const RID = 'al-nakheel' // عدّلها إن لزم
 
 export default function AdminPage() {
   const router = useRouter()
-  const search = useSearchParams()
-  const toAfterLogin = '/admin'
 
   useEffect(() => {
-    // القراءة من localStorage لازم تكون على العميل فقط (وهذا ملف client)
     const role = getStoredRole()
     if (role !== 'admin') {
-      // أعِد توجيه للّوجين مع بارام to لكي يرجع للوحة بعد الدخول
-      router.replace(`/login?to=${encodeURIComponent(toAfterLogin)`})
+      router.replace(`/login?to=${encodeURIComponent('/admin')}`)
     }
   }, [router])
 
@@ -32,7 +27,7 @@ export default function AdminPage() {
 
       {/* أقسام الإدارة */}
       <AdminBrandSection rid={RID} />
-      {/* ضف بقية الأقسام مثل إدارة المجموعات/الأصناف إن وجدت */}
+      {/* أضف أقسامًا أخرى هنا إن وجدت */}
     </main>
   )
 }
