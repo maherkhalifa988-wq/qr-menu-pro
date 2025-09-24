@@ -1,4 +1,3 @@
-// app/login/page.tsx
 'use client'
 
 export const dynamic = 'force-dynamic'
@@ -11,7 +10,7 @@ import { signInWithPasscode } from '@/lib/authClient'
 export default function LoginPage() {
   const router = useRouter()
   const search = useSearchParams()
-  const toParam = search?.get('to') ?? '' // قد يكون فارغ
+  const toParam = search?.get('to') ?? ''  // قد يكون فارغ
 
   const [pass, setPass] = useState('')
   const [loading, setLoading] = useState(false)
