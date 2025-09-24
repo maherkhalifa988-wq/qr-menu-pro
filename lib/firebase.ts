@@ -1,27 +1,34 @@
 // lib/firebase.ts
-import { initializeApp, getApps } from 'firebase/app'
-import { getAuth, signInAnonymously } from 'firebase/auth'
+import { initializeApp, getApps, getApp } from 'firebase/app'
 import { getFirestore } from 'firebase/firestore'
-import { onAuthStateChanged } from 'firebase/auth'
-console.log("✅ ProjectId from config:", getApps()[0]?.options?.projectId);
-onAuthStateChanged(auth, (user) => {
-  console.log("👤 Auth user:", user?.uid)
-});
+import { getAuth, signInAnonymously, onAuthStateChanged } from 'firebase/auth'
 
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN!,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET!,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID!,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID!,
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 }
 
-export const app = getApps().length ? getApps()[0]! : initializeApp(firebaseConfig)
-export const auth = getAuth(app)
-export const db = getFirestore(app)
+// تشخيص بسيط في المتصفح
+if (typeof window !== 'undefined') {
+  console.log('✅ ProjectId from config:', firebaseConfig.projectId)
+}
 
-// (اختياري) دالة لضمان وجود مستخدم قبل الكتابة على Firestore
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig)
+export const db = getFirestore(app)
+export const auth = getAuth(app)
+
+// الآن بعد تعريف auth نقدر نربط الـ listener
+if (typeof window !== 'undefined') {
+  onAuthStateChanged(auth, (user) => {
+    console.log('👤 Auth user:', user?.uid)
+  })
+}
+
+// دالة تضمن تسجيل دخول مجهول قبل استخدام Firestore
 export async function ensureSignedIn() {
   if (!auth.currentUser) {
     await signInAnonymously(auth)
