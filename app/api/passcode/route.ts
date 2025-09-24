@@ -1,19 +1,26 @@
-import { NextRequest, NextResponse } from 'next/server'
+// app/api/passcode/route.ts
+import { NextResponse } from 'next/server'
 
-export const runtime = 'nodejs'
-export const dynamic = 'force-dynamic'
+export async function POST(req: Request) {
+  try {
+    const { passcode } = await req.json()
 
-export async function GET(req: NextRequest) {
-  const sp = req.nextUrl.searchParams
-  const code = sp.get('code')?.trim() ?? ''
+    const admin = process.env.ADMIN_PASS
+    const editor = process.env.EDITOR_PASS
+    if (!admin || !editor) {
+      return NextResponse.json({ ok: false, error: 'Server passcodes missing' }, { status: 500 })
+    }
 
-  if (!code) return NextResponse.json({ error: 'Passcode required' }, { status: 400 })
+    let role: 'admin' | 'editor' | null = null
+    if (passcode === admin) role = 'admin'
+    else if (passcode === editor) role = 'editor'
 
-  const adminPass  = process.env.ADMIN_PASS  || ''
-  const editorPass = process.env.EDITOR_PASS || ''
+    if (!role) {
+      return NextResponse.json({ ok: false, error: 'INVALID_PASSCODE' }, { status: 401 })
+    }
 
-  if (code === adminPass)  return NextResponse.json({ role: 'admin' })
-  if (code === editorPass) return NextResponse.json({ role: 'editor' })
-
-  return NextResponse.json({ error: 'Invalid passcode' }, { status: 401 })
+    return NextResponse.json({ ok: true, role }, { status: 200 })
+  } catch (e: any) {
+    return NextResponse.json({ ok: false, error: e?.message ?? 'Bad request' }, { status: 400 })
+  }
 }
