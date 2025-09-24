@@ -1,38 +1,41 @@
+// app/admin/page.tsx
 'use client'
 
 import { useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { getStoredRole } from '@/lib/authClient'
+import { getStoredRole, clearStoredRole } from '@/lib/role'
 import AdminBrandSection from './AdminBrandSection'
-// إن كان لديك أقسام أخرى استوردها هنا بنفس الشكل
-
-// أوقف أي إعادة توليد ثابتة
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
+// … (أي أقسام أخرى عندك)
 
 export default function AdminPage() {
   const router = useRouter()
-  const search = useSearchParams()
-  const path: string = search?.get('to') ?? '/admin'
+  const sp = useSearchParams()
+  const to = sp?.get('to') ?? '/admin'
 
   useEffect(() => {
-    // ممنوع استخدام localStorage خارج useEffect
-    const role = getStoredRole() // تقرأ من localStorage
+    const role = getStoredRole()
     if (role !== 'admin') {
-      // لو المستخدم ليس admin، أعد توجيهه لصفحة الدخول مع بارامتر العودة
-      router.replace(`/login?to=${encodeURIComponent(path)}`)
+      router.replace(`/login?to=${encodeURIComponent(to)}`)
     }
-  }, [router, path])
+  }, [router, to])
 
-  // المحتوى سيظهر فقط بعد تحقق useEffect، ولو ليس admin سيتم التحويل
-  // تأكد أن كل الأقسام المستخدمة هنا هي أيضاً 'use client'
-  const rid = 'al-nakheel' // أو أي آلية لديك لتحديد المطعم
+  function logout() {
+    clearStoredRole()
+    router.replace(`/login?to=${encodeURIComponent('/admin')}`)
+  }
+
+  // عدّل الـ rid كما تستخدمه عندك (مثلاً ثابت أو من إعدادات)
+  const rid = 'al-nakheel'
 
   return (
     <main className="container mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">لوحة الإدارة</h1>
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-2xl font-bold">لوحة الإدارة</h1>
+        <button className="btn-ghost" onClick={logout}>تسجيل الخروج</button>
+      </div>
+
       <AdminBrandSection rid={rid} />
-      {/* ضع باقي الأقسام هنا */}
+      {/* ضع بقية أقسام الإدارة هنا */}
     </main>
   )
 }
