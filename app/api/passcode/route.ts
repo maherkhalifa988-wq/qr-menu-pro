@@ -5,8 +5,8 @@ export async function POST(req: Request) {
   try {
     const { passcode } = await req.json()
 
-    const admin = process.env.ADMIN_PASS
-    const editor = process.env.EDITOR_PASS
+    const admin = process.env.ADMIN_PASSCODE
+    const editor = process.env.EDITOR_PASSCODE
     if (!admin || !editor) {
       return NextResponse.json({ ok: false, error: 'Server passcodes missing' }, { status: 500 })
     }
