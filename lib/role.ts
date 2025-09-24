@@ -1,21 +1,19 @@
-// lib/role.ts
-export type Role = 'admin' | 'editor'
+'use client'
 
-const ROLE_KEY = 'qrmenu_role'
+const KEY = 'qrmenu_role'
 
-export function setStoredRole(role: Role) {
-  try { localStorage.setItem(ROLE_KEY, role) } catch {}
+export function setStoredRole(role: 'admin' | 'editor') {
+  try { localStorage.setItem(KEY, role) } catch {}
+}
+
+export function getStoredRole(): 'admin' | 'editor' | null {
+  try {
+    const r = localStorage.getItem(KEY)
+    if (r === 'admin' || r === 'editor') return r
+    return null
+  } catch { return null }
 }
 
 export function clearStoredRole() {
-  try { localStorage.removeItem(ROLE_KEY) } catch {}
-}
-
-export function getStoredRole(): Role | null {
-  try {
-    const v = localStorage.getItem(ROLE_KEY)
-    return (v === 'admin' || v === 'editor') ? v : null
-  } catch {
-    return null
-  }
+  try { localStorage.removeItem(KEY) } catch {}
 }
