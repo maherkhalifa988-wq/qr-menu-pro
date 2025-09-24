@@ -31,7 +31,10 @@ export default function PriceEditor({ rid }: Props) {
     async function load() {
       setLoading(true)
       try {
-        const qi = query(collection(db, 'restaurants', rid, 'items'), orderBy('nameAr'))
+        const qi = query(
+          collection(db, 'restaurants', rid, 'items'),
+          orderBy('nameAr')
+        )
         const snap = await getDocs(qi)
         setItems(snap.docs.map(d => ({ id: d.id, ...(d.data() as any) })))
       } finally {
@@ -56,8 +59,10 @@ export default function PriceEditor({ rid }: Props) {
     }
   }
 
-  if (loading){ return <p className="p-4">...جارٍ التحميل</p>
-              }
+  if (loading) {
+    return <p className="p-4">...جارٍ التحميل</p>
+  }
+
   return (
     <div className="space-y-4">
       <h2 className="font-bold text-lg">تعديل أسعار الأصناف</h2>
@@ -89,7 +94,9 @@ export default function PriceEditor({ rid }: Props) {
                 />
               </td>
               <td className="p-2">
-                {saving === it.id && <span className="text-sm text-white/70">...جارٍ الحفظ</span>}
+                {saving === it.id && (
+                  <span className="text-sm text-white/70">...جارٍ الحفظ</span>
+                )}
               </td>
             </tr>
           ))}
