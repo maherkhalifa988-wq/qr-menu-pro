@@ -1,31 +1,25 @@
-
-'use client'
-import { getAuth, signInWithCustomToken } from 'firebase/auth'
-import { app } from '@/lib/firebase'
-
-export async function signInWithPasscode(code: string): Promise<'admin' | 'editor'> {
-  const pass = (code ?? '').trim()
-  if (!pass) throw new Error('EMPTY_CODE')
-
-  const url = new URL('/api/passcode', location.origin)
-  url.searchParams.set('code', pass)
-
-  const res = await fetch(url.toString(), { method: 'GET', cache: 'no-store' })
-  if (!res.ok) {
-    const text = await res.text().catch(() => '')
-    throw new Error('PASSCODE_HTTP_${res.status}: ${text}')
+// lib/authClient.ts
+export async function signInWithPasscode(passcode: string): Promise<'admin' | 'editor'> {
+  const res = await fetch('/api/passcode', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ passcode }),
+  })
+  const data = await res.json().catch(() => ({}))
+  if (!res.ok || !data?.ok || !data?.role) {
+    throw new Error(data?.error || 'PASSCODE_HTTP_' + res.status)
   }
+  localStorage.setItem('role', data.role)
+  return data.role as 'admin' | 'editor'
+}
 
-  const data = await res.json()
-  const token: string | undefined = data.token   // إن كنت تعيد توكين
-  const role: 'admin' | 'editor' = data.role
+export function getStoredRole(): 'admin' | 'editor' | null {
+  if (typeof window === 'undefined') return null
+  const r = localStorage.getItem('role')
+  return r === 'admin' || r === 'editor' ? r : null
+}
 
-  // إن عندك توكين Firebase:
-  if (token) {
-    const auth = getAuth(app)
-    await signInWithCustomToken(auth, token)
-   await auth.currentUser?.getIdToken(true)
-  }
-
-  return role
+export function clearRole() {
+  if (typeof window === 'undefined') return
+  localStorage.removeItem('role')
 }
