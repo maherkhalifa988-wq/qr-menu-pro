@@ -5,8 +5,8 @@ import { signInWithPasscode } from '@/lib/authClient'
 
 export default function LoginPage() {
   const router = useRouter()
-  const q = useSearchParams()
-  const to = q.get('to') || '/'
+ const q = useSearchParams()
+const to = q ? (q.get('to') ?? '/') : '/'
   const [pass, setPass] = useState('')
   const [loading, setLoading] = useState(false)
 
