@@ -10,7 +10,7 @@ export default function EditorPage() {
   useEffect(() => {
     const role = getStoredRole()
     if (role !== 'editor' && role !== 'admin') {
-      router.replace(`/login?to=${encodeURIComponent(path)}`)
+      router.replace(`/login?to=${encodeURIComponent(path ?'')}`)
     }
   }, [router, path])
 
