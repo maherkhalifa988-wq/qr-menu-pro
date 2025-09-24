@@ -3,6 +3,9 @@ import { initializeApp, getApps } from 'firebase/app'
 import { getAuth, signInAnonymously } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
 console.log("✅ ProjectId from config:", getApps()[0]?.options?.projectId);
+onAuthStateChanged(auth, (user) => {
+  console.log("👤 Auth user:", user?.uid)
+});
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
