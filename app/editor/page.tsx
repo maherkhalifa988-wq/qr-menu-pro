@@ -17,6 +17,7 @@ export default function EditorPage() {
   const router = useRouter()
   const params = useSearchParams()
   const to = params?.get('to') || '/editor'
+  const rid='al-nakheel'
 
   useEffect(() => {
     const role = getStoredRole()
