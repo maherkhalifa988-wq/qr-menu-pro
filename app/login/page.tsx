@@ -1,12 +1,15 @@
+// app/login/page.tsx
 'use client'
-import { useSearchParams, useRouter } from 'next/navigation'
+
 import { useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { signInWithPasscode } from '@/lib/authClient'
 
 export default function LoginPage() {
   const router = useRouter()
- const q = useSearchParams()
-const to = q ? (q.get('to') ?? '/') : '/'
+  const sp = useSearchParams()
+  const to = sp?.get('to') ?? '/'  // مسار الرجوع بعد الدخول
+
   const [pass, setPass] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -14,33 +17,29 @@ const to = q ? (q.get('to') ?? '/') : '/'
     e.preventDefault()
     setLoading(true)
     try {
-      const role = await signInWithPasscode(pass)
-      // إن كانت الوجهة /admin والدور ليس أدمن → حوّل للمحرر
-      if (to.startsWith('/admin') && role !== 'admin') {
-        router.replace('/editor')
-      } else {
-        router.replace(to)
-      }
+      await signInWithPasscode(pass)
+      router.replace(to)  // ارجع للمسار المطلوب
     } catch (err: any) {
-      alert(`خطأ: ${err?.message ?? err}`)
+      console.error('LOGIN_ERROR', err)
+      alert(`فشل الدخول: ${err?.message || err}`)
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <main className="container mx-auto p-6">
+    <main className="container mx-auto p-6 max-w-md">
       <h1 className="text-2xl font-bold mb-4">تسجيل الدخول</h1>
-      <form onSubmit={onSubmit} className="max-w-sm space-y-3">
+      <form onSubmit={onSubmit} className="card p-4 flex flex-col gap-3">
         <input
-          type="password"
-          className="input w-full"
-          placeholder="أدخل كلمة السر"
+          className="input"
           value={pass}
           onChange={(e) => setPass(e.target.value)}
+          placeholder="أدخل كلمة المرور"
+          type="password"
         />
-        <button className="btn" disabled={loading}>
-          {loading ? '...جاري التحقق' : 'دخول'}
+        <button className="btn" disabled={loading} type="submit">
+          {loading ? 'جاري التحقق...' : 'دخول'}
         </button>
       </form>
     </main>
