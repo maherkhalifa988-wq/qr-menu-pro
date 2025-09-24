@@ -12,23 +12,20 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 }
 
-// تشخيص بسيط في المتصفح
 if (typeof window !== 'undefined') {
   console.log('✅ ProjectId from config:', firebaseConfig.projectId)
 }
 
-const app = getApps().length ? getApp() : initializeApp(firebaseConfig)
+export const app = getApps().length ? getApp() : initializeApp(firebaseConfig) // ← صدّر app
 export const db = getFirestore(app)
 export const auth = getAuth(app)
 
-// الآن بعد تعريف auth نقدر نربط الـ listener
 if (typeof window !== 'undefined') {
   onAuthStateChanged(auth, (user) => {
     console.log('👤 Auth user:', user?.uid)
   })
 }
 
-// دالة تضمن تسجيل دخول مجهول قبل استخدام Firestore
 export async function ensureSignedIn() {
   if (!auth.currentUser) {
     await signInAnonymously(auth)
