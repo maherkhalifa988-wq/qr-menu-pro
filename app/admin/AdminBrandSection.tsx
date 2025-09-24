@@ -105,7 +105,7 @@ export default function AdminBrandSection({ rid }: Props) {
       alert('✅ تم رفع الشعار وحفظه')
     } catch (err: any) {
       console.error(err)
-      alert('❌ مشكلة: ${err?.message ?? err}')
+      alert(`❌ مشكلة: ${err?.message ?? err}`)
     } finally {
       setSavingLogo(false)
       e.target.value = ''
@@ -124,7 +124,7 @@ export default function AdminBrandSection({ rid }: Props) {
       alert('✅ تم رفع الخلفية وحفظها')
     } catch (err: any) {
       console.error(err)
-      alert('❌ مشكلة: ${err?.message ?? err}')
+      alert(`❌ مشكلة: ${err?.message ?? err}`)
     } finally {
       setSavingBg(false)
       e.target.value = ''
@@ -197,7 +197,7 @@ export default function AdminBrandSection({ rid }: Props) {
       alert('✅ تم استيراد ملف JSON واستبدال البيانات بنجاح')
     } catch (err: any) {
       console.error(err)
-      alert('❌ فشل استيراد JSON: ${err?.message ?? err}')
+      alert(`❌ فشل استيراد JSON: ${err?.message ?? err}`)
     } finally {
       setImportingJSON(false)
       e.target.value = ''
