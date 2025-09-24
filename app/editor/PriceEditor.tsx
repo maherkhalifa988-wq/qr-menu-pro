@@ -56,8 +56,8 @@ export default function PriceEditor({ rid }: Props) {
     }
   }
 
-  if (loading) return <p className="p-4">...جارٍ التحميل</p>
-
+  if (loading){ return <p className="p-4">...جارٍ التحميل</p>
+              }
   return (
     <div className="space-y-4">
       <h2 className="font-bold text-lg">تعديل أسعار الأصناف</h2>
