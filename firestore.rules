@@ -1,18 +1,23 @@
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    // مطاعم
-    match /restaurants/{rid} {
-      allow read: if true;
-      allow write: if request.auth != null; // مؤقتاً لأي مستخدم مسجل
-    }
+// أعلى الملف:
+import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from 'firebase/auth'
+import { app } from '@/lib/firebase' // أو حيثما تهيّئ Firebase
 
-    // مجموعات/أصناف داخل المطعم
-    match /restaurants/{rid}/categories/{cid} {
-      allow read: if true;
-      allow write: if request.auth != null; // مؤقتاً
+// داخل useEffect أول ما تفتح صفحة الأدمن:
+useEffect(() => {
+  const auth = getAuth(app)
+  const unsub = onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      // افتح نافذة تسجيل بواسطة جوجل بسرعة
+      try {
+        await signInWithPopup(auth, new GoogleAuthProvider())
+        console.log('Signed in')
+      } catch (e) {
+        console.error('Login failed', e)
+        alert('يلزم تسجيل الدخول لاستخدام لوحة التحكم')
+      }
+    } else {
+      console.log('Logged in as', user.uid, user.email)
     }
-
-    // أضف مسارات أخرى لديك بنفس النمط إن لزم
-  }
-}
+  })
+  return () => unsub()
+}, [])
