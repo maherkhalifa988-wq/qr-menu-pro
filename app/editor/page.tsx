@@ -1,4 +1,3 @@
-// app/editor/page.tsx
 'use client'
 
 export const dynamic = 'force-dynamic'
@@ -7,8 +6,8 @@ export const revalidate = 0
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { getStoredRole } from '@/lib/role'
-import PriceEditor from './PriceEditor' // تأكد أن الملف موجود
-
+import PriceEditor from './PriceEditor' // تأكد أن الملف موجود ويعمل
+// استخدم نفس الـ rid الذي تعمل به الآن
 const RID = 'al-nakheel'
 
 export default function EditorPage() {
@@ -16,9 +15,8 @@ export default function EditorPage() {
 
   useEffect(() => {
     const role = getStoredRole()
-    if (role !== 'editor' && role !== 'admin') {
-      const to = '/editor'
-      router.replace(`/login?to=${encodeURIComponent(to)}`)
+    if (role !== 'editor') {
+      router.replace(`/login?to=${encodeURIComponent('/editor')}`)
     }
   }, [router])
 
