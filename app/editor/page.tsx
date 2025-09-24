@@ -1,11 +1,12 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 import { useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import PriceEditor from './PriceEditor'
 
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
 
 function getStoredRole(): 'admin' | 'editor' | '' {
   if (typeof window === 'undefined') return ''
