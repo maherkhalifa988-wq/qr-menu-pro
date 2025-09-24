@@ -170,7 +170,7 @@ export default function AdminBrandSection({ rid }: Props) {
       // أضف الجديد
       for (const cat of categories) {
         const catRef = await addDoc(catsCol, {
-          name: cat?.nameAr  cat?.nameEn  '',
+          name: cat?.nameAr || cat?.nameEn || '',
           nameAr: cat?.nameAr || '',
           nameEn: cat?.nameEn || '',
           order: typeof cat?.order === 'number' ? cat.order : 0,
