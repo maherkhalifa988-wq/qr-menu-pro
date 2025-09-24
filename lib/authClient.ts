@@ -1,25 +1,25 @@
 // lib/authClient.ts
-export async function signInWithPasscode(passcode: string): Promise<'admin' | 'editor'> {
-  const res = await fetch('/api/passcode', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ passcode }),
-  })
+'use client'
+
+import { setStoredRole, type Role } from './role'
+
+export async function signInWithPasscode(code: string): Promise<Role> {
+  const pass = (code ?? '').trim()
+  if (!pass) throw new Error('EMPTY_CODE')
+
+  const url = new URL('/api/passcode', location.origin)
+  url.search = new URLSearchParams({ code: pass }).toString()
+
+  const res = await fetch(url.toString(), { method: 'GET', cache: 'no-store' })
   const data = await res.json().catch(() => ({}))
-  if (!res.ok || !data?.ok || !data?.role) {
-    throw new Error(data?.error || 'PASSCODE_HTTP_' + res.status)
-  }
-  localStorage.setItem('role', data.role)
-  return data.role as 'admin' | 'editor'
-}
 
-export function getStoredRole(): 'admin' | 'editor' | null {
-  if (typeof window === 'undefined') return null
-  const r = localStorage.getItem('role')
-  return r === 'admin' || r === 'editor' ? r : null
-}
+  if (!res.ok) throw new Error(data?.error || 'LOGIN_FAILED')
 
-export function clearRole() {
-  if (typeof window === 'undefined') return
-  localStorage.removeItem('role')
+  const role = data?.role as Role | undefined
+  if (role !== 'admin' && role !== 'editor') throw new Error('NO_ROLE')
+
+  // نخزن الدور محلياً
+  setStoredRole(role)
+  // (اختياري) لو عندك token وتحتاجه لاحقًا، خزنّه هنا أيضًا.
+  return role
 }
