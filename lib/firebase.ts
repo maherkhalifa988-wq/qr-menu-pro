@@ -3,7 +3,6 @@ import { initializeApp, getApps } from 'firebase/app'
 import { getFirestore } from 'firebase/firestore'
 import { getAuth } from 'firebase/auth'
 import { getFunctions } from 'firebase/functions'
-import { getApps } from "firebase/app";
 
 console.log("✅ ProjectId from config:", getApps()[0]?.options?.projectId);
 
