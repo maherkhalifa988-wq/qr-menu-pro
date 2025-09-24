@@ -182,7 +182,7 @@ export default function AdminBrandSection({ rid }: Props) {
         const items = Array.isArray(cat?.items) ? cat.items : []
         for (const item of items) {
           await addDoc(collection(db, 'restaurants', rid, 'categories', catRef.id, 'items'), {
-            name: item?.nameAr  item?.nameEn  '',
+            name: item?.nameAr || item?.nameEn || '',
             nameAr: item?.nameAr || '',
             nameEn: item?.nameEn || '',
             price: typeof item?.price === 'number' ? item.price : 0,
