@@ -1,9 +1,10 @@
 // lib/authClient.ts
 'use client'
+import { getAuth, signInWithCustomToken } from 'firebase/auth'
+import { auth } from '@/lib/firebase'
+import { setStoredRole } from '@/lib/role'
 
-import { setStoredRole, type Role } from './role'
-
-export async function signInWithPasscode(code: string): Promise<Role> {
+export async function signInWithPasscode(code: string): Promise<'admin'|'editor'> {
   const pass = (code ?? '').trim()
   if (!pass) throw new Error('EMPTY_CODE')
 
@@ -11,15 +12,17 @@ export async function signInWithPasscode(code: string): Promise<Role> {
   url.search = new URLSearchParams({ code: pass }).toString()
 
   const res = await fetch(url.toString(), { method: 'GET', cache: 'no-store' })
-  const data = await res.json().catch(() => ({}))
+  const data = await res.json()
+  if (!res.ok) throw new Error(data?.error || 'Invalid passcode')
 
-  if (!res.ok) throw new Error(data?.error || 'LOGIN_FAILED')
+  const { role, token } = data as { role: 'admin'|'editor', token?: string }
 
-  const role = data?.role as Role | undefined
-  if (role !== 'admin' && role !== 'editor') throw new Error('NO_ROLE')
+  // إن كان لديك backend يعيد custom token:
+  if (token) {
+    const fa = getAuth(auth.app)
+    await signInWithCustomToken(fa, token)
+  }
 
-  // نخزن الدور محلياً
   setStoredRole(role)
-  // (اختياري) لو عندك token وتحتاجه لاحقًا، خزنّه هنا أيضًا.
   return role
 }
