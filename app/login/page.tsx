@@ -6,41 +6,50 @@ import { signInWithPasscode } from '@/lib/authClient'
 
 export default function LoginPage() {
   const router = useRouter()
-  const sp = useSearchParams()
-  const to = sp?.get('to') ?? '/'   // وجهة الرجوع بعد النجاح
+  const search = useSearchParams()
+  const to = search?.get('to') || '/'
 
   const [pass, setPass] = useState('')
   const [loading, setLoading] = useState(false)
+  const [err, setErr] = useState<string | null>(null)
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
+    setErr(null)
     setLoading(true)
     try {
-      await signInWithPasscode(pass)  // يحدد الدور داخليًا
-      router.push(to)                 // ✅ string واضح
-    } catch (err: any) {
-      console.error('LOGIN_ERROR', err)
-      alert(`فشل الدخول: ${err?.message || err}`)
+      await signInWithPasscode(pass) // يُخزن الدور محليًا وربما يوقّع Firebase بتوكن API
+      router.replace(to)             // ارجاع إلى الصفحة المطلوبة
+    } catch (error: any) {
+      console.error('LOGIN_ERROR', error)
+      setErr(error?.message || 'فشل تسجيل الدخول')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <main className="container mx-auto p-6">
+    <main className="container mx-auto p-6 max-w-md">
       <h1 className="text-2xl font-bold mb-4">تسجيل الدخول</h1>
-      <form onSubmit={onSubmit} className="space-y-3 max-w-sm">
+
+      <form onSubmit={onSubmit} className="space-y-4">
         <input
           className="input w-full"
+          type="password"
           placeholder="أدخل كلمة المرور"
           value={pass}
           onChange={(e) => setPass(e.target.value)}
-          type="password"
+          autoFocus
         />
-        <button className="btn" disabled={loading}>
+        <button className="btn w-full" disabled={loading}>
           {loading ? '...جارٍ التحقق' : 'دخول'}
         </button>
+        {err && <p className="text-red-400 text-sm">{err}</p>}
       </form>
+
+      <p className="text-white/60 text-xs mt-4">
+        سيتم تحويلك إلى: <code className="bg-white/10 px-2 py-0.5 rounded">{to}</code>
+      </p>
     </main>
   )
 }
