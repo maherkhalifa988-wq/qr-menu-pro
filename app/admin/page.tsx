@@ -10,7 +10,7 @@ export default function AdminPage() {
   useEffect(() => {
     const role = getStoredRole()
     if (role !== 'admin') {
-      router.replace(`/login?to=${encodeURIComponent(path)}`)
+      router.replace(`/login?to=${encodeURIComponent(path ?'')}`)
     }
   }, [router, path])
 
