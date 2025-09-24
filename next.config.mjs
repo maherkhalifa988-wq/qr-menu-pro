@@ -1,8 +1,16 @@
+// next.config.mjs
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ['res.cloudinary.com'],
+    remotePatterns: [
+      { protocol: 'https', hostname: 'res.cloudinary.com' },
+      // أضف أي دومينات صور تحتاجها لاحقًا
+      // { protocol: 'https', hostname: 'images.unsplash.com' },
+    ],
+  },
+  experimental: {
+    typedRoutes: true,
   },
 };
 
-module.exports = nextConfig;
+export default nextConfig;
