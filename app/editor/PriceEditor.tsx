@@ -38,41 +38,35 @@ export default function PriceEditor({ rid }: { rid: string }) {
 
   if (loading){
     return <p className="p-4">...جارٍ التحميل</p>
-}
+  }
+
   return (
     <div className="space-y-4">
       <h2 className="font-bold text-lg">تعديل أسعار الأصناف</h2>
       <table className="w-full border border-white/20">
         <thead>
-          <tr className="bg-white/5">
-            <th className="p-2 text-right">الاسم</th>
-            <th className="p-2 text-right">السعر</th>
-            <th className="p-2"></th>
+          <tr>
+            <th className="p-2 text-left">الاسم</th>
+            <th className="p-2">السعر</th>
           </tr>
         </thead>
         <tbody>
-          {items.map((it) => (
-            <tr key={it.id} className="border-t border-white/10">
-              <td className="p-2">{it.nameAr  it.name  it.nameEn || '—'}</td>
+          {items.map(it => (
+            <tr key={it.id}>
+              <td className="p-2">{it.nameAr || it.nameEn || it.name}</td>
               <td className="p-2">
                 <input
-                  className="input w-32"
                   type="number"
                   defaultValue={it.price ?? 0}
-                  onChange={(e) => {
-                    const v = Number(e.target.value || 0)
-                    setItems(prev => prev.map(x => x.id === it.id ? { ...x, price: v } : x))
+                  className="input w-24"
+                  onBlur={async (e) => {
+                    const val = Number(e.target.value)
+                    await updateDoc(doc(db, 'restaurants', rid, 'items', it.id), {
+                      price: val,
+                      updatedAt: Date.now(),
+                    })
                   }}
                 />
-              </td>
-              <td className="p-2">
-                <button
-                  className="btn"
-                  disabled={savingId === it.id}
-                  onClick={() => savePrice(it.id, Number(items.find(x => x.id === it.id)?.price ?? 0))}
-                >
-                  {savingId === it.id ? '...يحفظ' : 'حفظ'}
-                </button>
               </td>
             </tr>
           ))}
