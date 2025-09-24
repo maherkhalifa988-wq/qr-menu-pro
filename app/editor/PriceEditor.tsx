@@ -19,7 +19,7 @@ type Item = {
   price?: number
   catId?: string
 }
-
+ 
 type Props = { rid: string }
 
 export default function PriceEditor({ rid }: Props) {
